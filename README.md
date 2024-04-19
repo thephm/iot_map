@@ -12,12 +12,12 @@ The `docs/IoT Thing of Things.xlsx` is a spreadsheet of companies and products t
 
 ### Setup
 
-Old notes in [[docs/setup.md]]
+Old notes in [docs/setup.md](docs/setup.md)
 
 ### Mockup
-
-![[docs/IoT-Map-Mockup.png]]
  
+![](docs/IoT-Map-Mockup.png]
+
 ---
 
 countries/#
