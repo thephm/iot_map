@@ -1,4 +1,4 @@
-# iotmap
+# iot_map
 
 This is code from a few years ago for a node.js "interactive" map of all things IoT around the world. 
 
@@ -12,12 +12,12 @@ The `docs/IoT Thing of Things.xlsx` is a spreadsheet of companies and products t
 
 ### Setup
 
-Old notes in [[docs/setup.md]]
+Old notes in [docs/setup.md](docs/setup.md)
 
 ### Mockup
-
-![[docs/IoT-Map-Mockup.png]]
  
+![](docs/IoT-Map-Mockup.png)
+
 ---
 
 countries/#

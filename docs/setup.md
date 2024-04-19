@@ -140,7 +140,7 @@ docker exec -it af67b35d6c1b bash
 
 # login to mariadb and change root password
 mysql -u root -p
-ALTER USER 'root'@'localhost' IDENTIFIED BY '2w3E4r%T';
+ALTER USER 'root'@'localhost' IDENTIFIED BY 'blah';
 
 # access it
 http://iotmap.ca:81
