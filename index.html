@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	
+	<title>Interactive IoT Map</title>
+
+	<meta charset="UTF-8">
+	<meta name="Author" content="The Pointy Haired Manager">
+	<meta name="Keywords" content="IoT Map, IoT Companies, Internet of Things, IoE, Internet of Everything, IoT Platforms">
+	<meta name="Description" content="An interactive map of Internet of Things (IoT) organizations worldwide">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<style>
+		h1, h2, h3, h4, h5, h6, td {
+			font-family:"Segoe UI",Tahoma,Verdana,Arial,Helvetica;
+		}
+		p, div {
+			font-family:"Segoe UI",Tahoma,Verdana,Arial,Helvetica;
+		}
+		#map {
+			width: 100%;
+			height: 400px;
+			background-color: grey;
+		}
+	</style>
+
+	<!-- https://getbootstrap.com/docs/4.0/getting-started/download/ -->
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<!--	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script> -->
+
+	<!-- Optional theme -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+	<link rel="stylesheet" type="text/css" href="../../common/ui/default.css">
+    </script>
+
+</head>
+
+<body>
+<nav class="navbar navbar-default" role="navigation"> <!-- navbar-fixed-top -->
+  <div class="container-fluid">
+
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="https://www.iotmap.ca">Home</a>
+    </div> <!-- navbar-header -->
+
+    <div class="collapse navbar-collapse">
+    <ul class="nav navbar-nav">
+    </ul>
+  </div> <!-- collapse navbar-collapse -->
+  </div> <!-- container-fluid -->
+</nav> <!-- navbar -->
+
+<div class="container-fluid grid">
+	<div class="row">
+
+	<div class="col-sm-2">
+		<h2>Interactive IoT Map</h2>		
+	</div>
+	<div class="col-sm-7" id="map" >
+	<div class="col-sm-10" style="position: relative; overflow: hidden;">
+		<div class="panel panel-default">
+			<div class="panel-body" id="map2"></div>
+					<a href="https://iotmap.ca"><img src="iotmap/src/iotmap/static/images/staticmap.png"></a>
+	<p>	
+		Follow along 
+		<a href="https://www.facebook.com/iotmap"><img src="images/flat_facebook.png"></a>
+		<a href="https://www.twitter.com/eyeohtee"><img src="images/flat_twitter.png"></a>
+		<a href="https://www.linkedin.com/groups/12026265"><img src="images/flat_linkedin.png"></a>
+		<a href="https://www.instagram.com/eyeohtee"><img src="images/flat_instagram.png"></a>
+		<br><br>
+		<i>@Copyright <a href="https://ca.linkedin.com/in/tobernie">B. Jansen</a> 2016-2022</i>
+	</p>
+				</center>
+
+		</div> <!-- panel -->
+	</div> <!-- col-sm-12 -->
+	</div> <!-- row -->
+</div> <!-- container-fluid -->
+	
+</body>
+</html>

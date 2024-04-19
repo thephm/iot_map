@@ -1,0 +1,439 @@
+[{
+  "slug" : "iot-platform",
+  "name": "IoT Platform",
+  "count": 0,
+  "default_sub_category" : "software",
+  "subcategories" : [
+    {
+      "slug" : "agriculture",
+      "name" : "Agriculture",
+      "count" : 1
+    },
+    {
+      "slug" : "consumer",
+      "name" : "Consumer",
+      "count" : 2
+    },
+    { "slug" : "developer",
+      "name" : "Developer",
+      "count" : 3
+    },
+    { "slug" : "hardware",
+      "name" : "Hardware",
+      "count" : 4
+    },
+    { "slug" : "hub",
+      "name" : "Hub",
+      "count" : 5
+    },
+    { "slug" : "industrial",
+      "name" : "Industrial",
+      "count" : 6
+    },
+    { "slug" : "lights",
+      "name" : "Lights",
+      "count" : 7
+    },
+    { "slug" : "organization",
+      "name" : "Organization",
+      "count" : 8
+    },
+    { "slug" : "power",
+      "name" : "Power",
+      "count" : 9
+    },
+    { "slug" : "security",
+      "name" : "Security",
+      "count" : 10
+    },
+    { "slug" : "sensors",
+      "name" : "Sensors",
+      "count" : 11
+    },
+    { "slug" : "services",
+      "name" : "Services",
+      "count" : 12
+    },
+    { "slug" : "software",
+      "name" : "Software",
+      "count" : 13
+    },
+    { "slug" : "wireless",
+      "name" : "Wireless",
+      "count" : 14
+    }
+  ]
+},
+{
+  "slug" : "iot-standard",
+  "name" : "IoT Standard",
+  "count" : 12,
+  "default_sub_category" : "organization",
+  "subcategories" : [
+    {
+      "slug" : "industrial",
+      "name" : "Industrial",
+      "count" : 16
+    },
+    {
+      "slug" : "lights",
+      "name" : "Lights",
+      "count" : 17
+    },
+    {
+      "slug" : "organization",
+      "name" : "Organization",
+      "count" : 18
+    },
+    {
+      "slug" : "power",
+      "name" : "Power",
+      "count" : 19
+    },
+    {
+      "slug" : "security",
+      "name" : "Security",
+      "count" : 20
+    },
+    {
+      "slug" : "software",
+      "name" : "Software",
+      "count" : 21
+    },
+    {
+      "slug" : "wireless",
+      "name" : "Wireless",
+      "count" : 22
+    }
+  ]
+},
+{
+  "slug" : "things",
+  "name" : "Things",
+  "count" : 23,
+  "default_sub_category" : "hub",
+  "subcategories" : [
+    {
+      "slug" : "buttons",
+      "name" : "Buttons",
+      "count" : 24
+    },
+    {
+      "slug" : "cameras",
+      "name" : "Cameras",
+      "count" : 25
+    },
+    {
+      "slug" : "consumer",
+      "name" : "Consumer",
+      "count" : 26
+    },
+    {
+      "slug" : "hub",
+      "name": "Hub",
+      "count" : 27
+    },
+    {
+      "slug" : "industrial",
+      "name" : "Industrial",
+      "count" : 28
+    },
+    {
+      "slug" : "locks",
+      "name" : "Locks",
+      "count" : 29
+    },
+    {
+      "slug" : "power",
+      "name" : "Power",
+      "count" : 30
+    },
+    {
+      "slug" : "security",
+      "name" : "Security",
+      "count" : 31
+    },
+    {
+      "slug" : "sensors",
+      "name" : "Sensors",
+      "count" : 32
+    },
+    {
+      "slug" : "water-heaters",
+      "name" : "Water Heater",
+      "count" : 33
+    },
+    {
+      "slug" : "wearables",
+      "name" : "Wearables",
+      "count" : 34
+    }
+  ]
+},
+{
+  "slug" : "home-automation",
+  "name" : "Home",
+  "count" : 35,
+  "default_sub_category" : "hub",
+  "subcategories" : [
+    {
+      "slug" : "appliances",
+      "name" : "Appliances",
+      "count" : 36
+    },
+    {
+      "slug" : "consumer",
+      "name" : "Consumer",
+      "count" : 37
+    },
+    {
+      "slug" : "entertainment",
+      "name" : "Entertainment",
+      "count" : 38
+    },
+    {
+      "slug" : "garage-door-openers",
+      "name" : "Garage Door",
+      "count" : 39
+    },
+    {
+      "slug" : "hardware",
+      "name" : "hardware",
+      "count" : 40
+    },
+    {
+      "slug" : "hub",
+      "name" : "Hub",
+      "count" : 41
+    },
+    {
+      "slug" : "locks",
+      "name" : "Locks",
+      "count" : 42
+    },
+    {
+      "slug" : "power",
+      "name" : "Power",
+      "count" : 43
+    },
+    {
+      "slug" : "robots",
+      "name" : "Robots",
+      "count" : 44
+    },
+    {
+      "slug" : "security",
+      "name" : "Security",
+      "count" : 45
+    },
+    {
+      "slug" : "services",
+      "name" : "Services",
+      "count" : 46
+    },
+    {
+      "slug" : "shades",
+      "name" : "Shades",
+      "count" : 47
+    },
+    {
+      "slug" : "smoke-detectors",
+      "name" : "Smoke Detectors",
+      "count" : 48
+    },
+    {
+      "slug" : "software",
+      "name" : "Software",
+      "count" : 49
+    },
+    {
+      "slug" : "thermostats",
+      "name" : "Thermostats",
+      "count" : 50
+    },
+    { "slug" : "wireless",
+      "name" : "Wireless",
+      "count" : 51
+    }
+  ]
+},
+{
+  "slug" : "hardware",
+  "name" : "Hardware",
+  "count" : 52,
+  "default_sub_category" : "microcontroller",
+  "subcategories" : [
+    {
+      "slug" : "automotive",
+      "name" : "Automotive",
+      "count" : 53
+    },
+    {
+      "slug" : "circuit-boards",
+      "name" : "Circuit Boards",
+      "count" : 54
+    },
+    {
+      "slug" : "developer",
+      "name" : "Developer",
+      "count" : 56
+    },
+    {
+      "slug" : "hub",
+      "name" : "Hub",
+      "count" : 57
+    },
+    {
+      "slug" : "industrial",
+      "name" : "Industrial",
+      "count" : 58
+    },
+    {
+      "slug" : "locks",
+      "name" : "Locks",
+      "count" : 59
+    },
+    {
+      "slug" : "manufacturer",
+      "name" : "Manufacturer",
+      "count" : 60
+    },
+    {
+      "slug" : "microcontroller",
+      "name" : "Microcontroller",
+      "count" : 61
+    },
+    {
+      "slug" : "online-store",
+      "name" : "Online Store",
+      "count" : 62
+    },
+    {
+      "slug" : "power",
+      "name" : "Power",
+      "count" : 63
+    },
+    {
+      "slug" : "sensors",
+      "name" : "Sensors",
+      "count" : 64
+    },
+    {
+      "slug" : "services",
+      "name" : "Services",
+      "count" : 65
+    },
+    {
+      "slug" : "soc",
+      "name" : "SoC",
+      "count" : 66
+    },
+    {
+      "slug" : "wireless",
+      "name" : "Wireless",
+      "count" : 67
+    }
+  ]
+},
+{
+  "slug" : "developer",
+  "name" : "Developer",
+  "count" : 68,
+  "default_sub_category" : "hardware",
+  "subcategories" : [
+    {
+      "slug" : "hardware",
+      "name" : "Hardware",
+      "count" : 69
+    },
+    {
+      "slug" : "industrial",
+      "name" : "Industrial",
+      "count" : 70
+    },
+    {
+      "slug" : "services",
+      "name" : "Services",
+      "count" : 71
+    },
+    {
+      "slug" : "software",
+      "name" : "Software",
+      "count" : 72
+    }
+  ]
+},
+{
+  "slug" : "services",
+  "name" : "Services",
+  "count" : 73,
+  "default_sub_category" : "consulting",
+  "subcategories" : [
+    {
+      "slug" : "automotive",
+      "name" : "Automotive",
+      "count" : 74
+    },
+    {
+      "slug" : "consulting",
+      "name" : "Consulting",
+      "count" : 75
+    },
+    {
+      "slug" : "consumer",
+      "name" : "Consumer",
+      "count" : 76
+    },
+    {
+      "slug" : "developer",
+      "name" : "Developer",
+      "count" : 77
+    },
+    {
+      "slug" : "hardware",
+      "name" : "Hardware",
+      "count" : 78
+    },
+    {
+      "slug" : "industrial",
+      "name" : "Industrial",
+      "count" : 79
+    },
+    {
+      "slug" : "music",
+      "name" : "Music",
+      "count" : 80
+    },
+    {
+      "slug" : "operator",
+      "name" : "Operator",
+      "count" : 81
+    },
+    {
+      "slug" : "organization",
+      "name" : "Organization",
+      "count" : 82
+    },
+    {
+      "slug" : "power",
+      "name" : "Power",
+      "count" : 83
+    },
+    {
+      "slug" : "security",
+      "name" : "Security",
+      "count" : 84
+    },
+    {
+      "slug": "software",
+      "name" : "Software",
+      "count" : 85
+    },
+    {
+      "slug" : "wireless",
+      "name" : "Wireless",
+      "count" : 86
+    }
+  ]
+}
+]

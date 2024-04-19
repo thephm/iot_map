@@ -1,0 +1,42 @@
+{ "type": "FeatureCollection",
+  "features":
+  [
+    { "id": "geeny",
+      "type": "Feature",
+      "geometry":
+      {
+        "type": "Point",
+        "coordinates": [13.3934657,52.50657469999999]
+      },
+      "properties":
+      {
+        "slug": "geeny",
+        "name": "Geeny",
+        "category": "Iot Platform",
+        "category_slug": "iot-platform",
+        "sub-category": "Consumer",
+        "sub-category_slug": "consumer",
+        "name": "Geeny",
+        "url": "www.geeny.io"
+      }
+    },
+    { "id": "joyride-technologies",
+      "type": "Feature",
+      "geometry":
+      {
+        "type": "Point",
+        "coordinates": [-79.3831843,43.653226]
+      },
+      "properties":
+      {
+        "slug": "joyride-technologies",
+        "name": "JoyRide Technologies",
+        "category": "Iot Platform",
+        "category_slug": "iot-platform",
+        "sub-category": "Consumer",
+        "sub-category_slug": "consumer",
+        "url": "www.joyride.city"
+      }
+    }
+  ]
+}

@@ -1,0 +1,188 @@
+<% for ( i=0; i < organization.product.length; i++ ) {
+  product = organization.product[ i ];%>
+
+    <h3><% if ( product.url ) { %>
+          <a href="#" onclick="clickedProduct(\'<%= product.slug %>\');">
+          <% if ( product.name ) { %><%= product.name %><% }
+             else { %> <%= product.url %> <% } %>
+          </a>
+      <% } else if ( product.name ) { %>
+        <%= product.name %>
+    <% } %></h3>
+
+    <p><%= product.primary_category %>
+    <% if ( product.secondary_category ) { %>/ <%= product.secondary_category %><% } %>
+    </p>
+    <p><i><%= product.description %></i></p>
+
+    <% if ( product.hardware || product.software || product.service ) { %>
+      <p>Type:
+        <% if ( product.hardware ) { %> hardware<%}%>
+        <% if ( product.software ) { %> software<%}%>
+        <% if ( product.service ) { %> service<%}%>
+      </p>
+    <%} %>
+
+    <% if ( product.open_source ) { %>
+      <p>Open Source
+      <% if ( product.open_source_license ) { %>
+        (<%= product.open_source_license %>)<%}%></p>
+    <%} %>
+
+    <% if ( product.github_url ) { %>
+      <p>GitHub: <a href="<%= product.github_url %>" target="<%= product.slug %>"><%= product.github_url %></a></p>
+    <%} %>
+
+    <% if ( product.feature.length ) { %>
+      <p>Features:
+        <% for ( a=0; a < product.feature.length; a++ ) {
+          if ( a ) {%>, <% } %>
+          <%= product.feature[ a ] %>
+        <% } %>
+      </p>
+    <%} %>
+
+    <% if ( product.protocol.length ) { %>
+      <p>Protocol:
+        <% for ( z=0; z < product.protocol.length; z++ ) {
+          if ( z ) {%>, <% } %>
+          <%= product.protocol[ z ] %>
+        <% } %>
+      </p>
+    <%} %>
+
+    <% if ( product.encryption.length ) { %>
+      <p>Encryption:
+        <% for ( e=0; e < product.encryption.length; e++ ) {
+          if ( e ) {%>, <% } %>
+          <%= product.encryption[ e ] %>
+        <% } %>
+      </p>
+    <%} %>
+
+    <% if ( product.authentication.length ) { %>
+      <p>Authentication:
+        <% for ( z=0; z < product.authentication.length; z++ ) {
+          if ( z ) {%>, <% } %>
+          <%= product.authentication[ z ] %>
+        <% } %>
+      </p>
+    <%} %>
+
+    <% if ( product.software_language.length ) { %>
+      <p>Software language:
+        <% for ( s=0; s < product.software_language.length; s++ ) {
+          if ( s ) {%>, <% } %>
+          <%= product.software_language[ s ] %>
+        <% } %>
+      </p>
+    <%} %>
+
+    <% if ( product.application.length ) { %>
+      <p>Applications:
+        <% for ( a=0; a < product.application.length; a++ ) {
+          if ( a ) {%>, <% } %>
+          <%= product.application[ a ] %>
+        <% } %>
+      </p>
+    <%} %>
+
+    <% if ( product.notification.length ) { %>
+      <p>Notifications:
+        <% for ( a=0; a < product.notification.length; a++ ) {
+          if ( a ) {%>, <% } %>
+          <%= product.notification[ a ] %>
+        <% } %>
+      </p>
+    <%} %>
+
+    <% if ( product.operating_system.length ) { %>
+      <p>Operating system:
+        <% for ( os=0; os < product.operating_system.length; os++ ) {
+          if ( os ) {%>, <% } %>
+          <%= product.operating_system[ os ] %>
+        <% } %>
+      </p>
+    <%} %>
+
+    <% hardwarePlatforms = product.hardware_platform; %>
+    <% if ( hardwarePlatforms.length ) { %>
+      <p>Hardware platforms:
+        <% for ( k=0; k < hardwarePlatforms.length; k++ ) {
+          platform = hardwarePlatforms[ k ];
+          if ( k ) {%>, <% } %>
+          <%= platform.name %>
+        <% } %>
+      </p>
+    <%} %>
+
+    <% wireless = product.wireless_interface; %>
+    <% if ( wireless.length ) { %>
+      <p>Wireless:
+        <% for ( w=0; w < wireless.length; w++ ) {
+          if ( w ) {%>, <%} %>
+          <%= wireless[ w ] %>
+        <% } %>
+      </p>
+    <%} %>
+
+    <% wifi_chip = product.wifi_chip; %>
+    <% if ( wifi_chip.length ) { %>
+      <p>Wi-Fi Chipset:
+        <% for ( p=0; p < wifi_chip.length; p++ ) {
+          if ( p ) {%>, <%} %>
+          <%= wifi_chip[ p ] %>
+        <% } %>
+      </p>
+    <%} %>
+
+    <% wired = product.wired_interface; %>
+    <% if ( wired.length ) { %>
+      <p>Wired:
+        <% for ( d=0; d < wired.length; d++ ) {
+          if ( d ) {%>, <%}
+          interface = wired[ d ]; %>
+          <%= interface %>
+        <% } %>
+      </p>
+    <%} %>
+
+    <% locations = product.location; %>
+    <% if ( locations.length ) { %>
+      <p>Location:
+        <% for ( l=0; l < locations.length; l++ ) {
+          if ( l ) {%>, <%}
+          location = locations[ l ]; %>
+          <%= location %>
+        <% } %>
+      </p>
+    <%} %>
+
+    <% standards = product.standard; %>
+    <% if ( standards.length ) { %>
+      <p>Standards:
+        <% for ( s=0; s < standards.length; s++ ) {
+          if ( s ) {%>, <% }
+          if ( product.standard[ s ].slug ) {%>
+            <a href="#" onclick="clickedStandard(\'<%= product.standard[ s ].slug %>\');">
+          <%}%>
+          <%= standards[ s ].name %>
+          <%if ( product.standard[ s ].slug ) {%></a><%}%>
+        <% } %>
+      </p>
+    <%} %>
+
+    <% if ( product.integration.length ) { %>
+      <p>Integrations:
+        <% for ( y=0; y < product.integration.length; y++ ) {
+          if ( y ) {%>, <% }
+          if ( product.integration[ y ].slug ) {%>
+            <a href="#" onclick="clickedIntegration(\'<%= product.integration[ y ].slug %>\');">
+          <%}%>
+          <%= product.integration[ y ].name %>
+          <%if ( product.integration[ y ].slug ) {%></a><%}%>
+        <% } %>
+      </p>
+    <%} %>
+
+<% } %>

@@ -1,0 +1,32 @@
+{
+  "name": "iotmap",
+  "version": "1.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node app"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.18.3",
+    "cookie-parser": "^1.4.6",
+    "core-js": "^3.20.3",
+    "ejs": "^3.1.6",
+    "express": "^4.17.2",
+    "express-session": "^1.17.2",
+    "greenlock-express": "^4.0.3",
+    "mongoose": "^6.2.0",
+    "nodemon": "^2.0.15",
+    "passport": "^0.5.2",
+    "passport-local": "^1.0.0",
+    "serve-favicon": "^2.5.0",
+    "winston": "^3.5.0"
+  },
+  "description": "countries/#\r countries/ca\r countries/canada",
+  "main": "app.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "devDependencies": {},
+  "author": "",
+  "license": "ISC"
+}
