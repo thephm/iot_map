@@ -1,4 +1,4 @@
-# iotmap
+# iot_map
 
 This is code from a few years ago for a node.js "interactive" map of all things IoT around the world. 
 
