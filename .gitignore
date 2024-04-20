@@ -1,5 +1,5 @@
 docs/IoT Thing of Things.xlsx
-iotmap*.json
+iotmap-*.json
 static/config/keys.json
 dump
 logs
@@ -7,3 +7,10 @@ static/map/bob.json
 .vs
 node_modules
 npm
+*.sln
+*.esproj
+iot_map.njsproj
+package_ts.json
+iot_map.njsproj.user
+*-boilerplate.js
+config/*.json

@@ -1,15 +1,15 @@
 <script>
-  $( '.organization-panel' ).hover(
-    function() { $( this ).addClass( 'hover' ); },
-    function() { $( this ).removeClass( 'hover' ); }
-  );
+  $('.organization-panel').hover(
+    function() { $(this).addClass('hover'); },
+    function() { $(this).removeClass('hover'); }
+ );
 </script>
-<% organizations.forEach( function( organization ) { %>
+<% organizations.forEach(function(organization) { %>
 
   <div class="panel panel-default organization-panel" id="<%= organization.slug %>-panel" name="<%= organization.slug %>" onclick="zoomToOrganization('<%= organization.slug %>');">
     <div class="panel-heading">
-      <% if ( typeof( organization.location ) != "undefined") { %>
-        <% if ( typeof( organization.location[0] ) != "undefined") { %>
+      <% if (typeof(organization.location) != "undefined") { %>
+        <% if (typeof(organization.location[0]) != "undefined") { %>
           <input type="hidden" id="organization.slug" value="<%= organization.slug %>">
           <input type="hidden" id="<%= organization.slug %>-lat" value="<%= organization.location[0].address.lat %>">
           <input type="hidden" id="<%= organization.slug %>-lng" value="<%= organization.location[0].address.lng %>">
@@ -20,7 +20,7 @@
       </a>
     </div>
     <div class="panel-body">
-    <% organization.product.forEach( function( product ) { %>
+    <% organization.product.forEach(function(product) { %>
     - <small><a href="#" onClick="loadProduct('<%= product.slug %>');"><%= product.name %></a></small><br>
     <% }) %>
     </div>

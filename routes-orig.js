@@ -386,10 +386,10 @@ router.use(function (req, res, next) {
 });
 
 // ------------------------------------------------------------------
-// main
 
 router.get('/', function (req, res) {
     try {
+        logger.debug("index");
         res.render('index');
     } catch (err) {
         res.json({ error: err.message || err.toString() });
@@ -537,7 +537,7 @@ function ensureAuthenticated(req, res, next) {
 }
 
 /** ensure the user is authenticated; then run the request handler if they
- * havenâ€™t been redirected
+ * haven’t been redirected
  */
 router.get("/edit", ensureAuthenticated, function (req, res) {
     res.render("edit");

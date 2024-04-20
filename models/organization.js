@@ -1,6 +1,6 @@
 var mongoose = require("mongoose");
 
-var organizationSchema = mongoose.Schema( {
+var organizationSchema = mongoose.Schema({
   name: { type: String, required: true, unique: true },
   slug: { type: String, required: true, unique: true },
   url: String,
@@ -88,43 +88,43 @@ var organizationSchema = mongoose.Schema( {
 
 organizationSchema.methods.getUrl = function() {
   url = this.url;
-  if ( !url.startsWith( 'http' ) ) { url = 'http://' + url; }
+  if (!url.startsWith('http')) { url = 'http://' + url; }
   return url;
 };
 
-organizationSchema.methods.checkUrl = function( url ) {
-  if ( !url.startsWith( 'http' ) ) { url = 'http://' + url; }
+organizationSchema.methods.checkUrl = function(url) {
+  if (!url.startsWith('http')) { url = 'http://' + url; }
   return url;
 };
 
 organizationSchema.methods.getFirstLocation = function() {
   address = "";
-  if ( this.location[ 0 ] ) {
+  if (this.location[ 0 ]) {
     location = this.location[ 0 ];
 
-    if ( location.address.street ) { address = location.address.street; }
+    if (location.address.street) { address = location.address.street; }
 
-    if ( location.address.suite ) {
+    if (location.address.suite) {
       address = address ? address += ' ' : address;
       address += location.address.suite;
     }
 
-    if ( location.address.city ) {
+    if (location.address.city) {
       address = address ? address += ', ' : address;
       address += location.address.city;
     }
 
-    if ( location.address.state_province ) {
+    if (location.address.state_province) {
       address = address ? address += ', ' : address;
       address += location.address.state_province;
     }
 
-    if ( location.address.country ) {
+    if (location.address.country) {
       address = address ? address += ', ' : address;
       address += location.address.country;
     }
 
-    if ( location.address.zip_postal ) {
+    if (location.address.zip_postal) {
       address = address ? address += ' ' : address;
       address += location.address.zip_postal;
     }
@@ -135,22 +135,22 @@ organizationSchema.methods.getFirstLocation = function() {
 
 organizationSchema.methods.getDateAdded = function() {
   dateStr = "";
-  if ( this.date_added ) {
-    dateStr = this.formatDate( this.date_added );
+  if (this.date_added) {
+    dateStr = this.formatDate(this.date_added);
   }
   return dateStr;
 };
 
-organizationSchema.methods.formatDate = function( date ) {
-  if ( date ) {
-    dateStr = date.toISOString().substr( 0, 10 );
+organizationSchema.methods.formatDate = function(date) {
+  if (date) {
+    dateStr = date.toISOString().substr(0, 10);
   }
   return dateStr;
 };
 
 organizationSchema.methods.getPhone = function() {
   phoneStr = "";
-  if ( this.location[ 0 ] ) {
+  if (this.location[ 0 ]) {
     location = this.location[ 0 ];
     phoneStr = location.phone;
   }
@@ -159,12 +159,12 @@ organizationSchema.methods.getPhone = function() {
 
 organizationSchema.methods.getEmail = function() {
   email = "";
-  if ( this.location[ 0 ] && this.location[ 0 ].email ) {
+  if (this.location[ 0 ] && this.location[ 0 ].email) {
     email = this.location[ 0 ].email;
   }
   return email;
 };
 
-var Organization = mongoose.model("Organization", organizationSchema );
+var Organization = mongoose.model("Organization", organizationSchema);
 
 module.exports = Organization;

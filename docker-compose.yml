@@ -1,26 +1,28 @@
 version: "3.7"
 
-volumes:
-  mongodata:
-
 services:
 
-  iotmap:
-    container_name: iotmap
+  iot_map:
+    container_name: iot_map
     build: .
-    restart: always
+#    restart: always
     ports:
       - "3000:3000"
-    links:
-      - mongo
-    depends_on: 
-      - mongo
-  
-  mongo:
-    container_name: mongo
-    image: mongo:latest
-    restart: always
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongodata:/iotmap-mongo/db
+    environment:
+      # self-hosted Mongo
+      - MONGODB_URI=mongodb://localhost:27017/iotmap
+
+#    links:
+#      - mongo
+#    depends_on: 
+#      - mongo
+# 
+        # in container
+#   mongo:
+#       container_name: mongo
+#       image: mongo:latest
+#       restart: always
+#   ports:
+#       - "27017:27017"
+#   volumes:
+#       - mongodata:/iotmap-mongo/db

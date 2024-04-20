@@ -7,6 +7,6 @@ var personSchema = mongoose.Schema({
   date_added: { type: Date, default: Date.now }
 });
 
-var Person = mongoose.model("Person", personSchema );
+var Person = mongoose.model("Person", personSchema);
 
-model.exports = Person;
+module.exports = Person;

@@ -108,17 +108,17 @@ npm install --save greenlock-express@2.x
 # in app.js
 'use strict';
 
-require( 'greenlock-express' ).create( {
+require('greenlock-express').create({
 
   server: 'https://acme-v01.api.letsencrypt.org/directory',
   email: 'iotmap@ownmail.net',
   agreeTos: true,
-  approveDomains: [ 'iotmap.ca' ],
-  app: require( 'express' )().use('/', function ( req, res ) {
-    res.end( 'Hello, World!' );
+  approveDomains: ['iotmap.ca'],
+  app: require('express')().use('/', function (req, res) {
+    res.end('Hello, World!');
   })
 
-}).listen( 80, 443 );
+}).listen(80, 443);
 
 # dump mongo db, puts it in dump\iotmap
 mongodump --db iotmap
