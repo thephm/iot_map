@@ -1,686 +1,535 @@
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.13.1/jquery-ui.min.js"></script>
 <style>
-  p, div {
-  	font-family:"Segoe UI",Tahoma,Verdana,Arial,Helvetica;
-  }
-  label {
+p, div {
+    font-family:"Segoe UI",Tahoma,Verdana,Arial,Helvetica;
+}
+label {
     font-weight: normal !important;
-  }
-  .panel {
+}
+.panel {
     border-color:grey;
     background-color:white;
-  }
+}
 
-  .panel.on {
+.panel.on {
     border-color:green;
-  }
+}
 
-  .panel.hover {
+.panel.hover {
     border-color:blue;
-  }
+}
 
-</style>
-<style>
-  /* set the map height explicitly to set size of div element that contains map
-   */
-  #map {
+/* set the map height explicitly to set size of div element that contains map
+*/
+#map {
     height: 100%;
-  }
-  /* Optional: Makes the sample page fill the window. */
-  html, body {
+}
+/* Optional: Makes the sample page fill the window. */
+html, body {
     height: 100%;
     margin: 0;
     padding: 0;
-  }
+}
 </style>
 <script>
-function initMap() {
-  map.init(
-    new google.maps.Map(document.getElementById('map'), {
-      center: { lat: 33.589886, lng: -7.603869 },
-      zoom: 2
-    })
- );
-}
-</script>
+(g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
+	key: "<%= process.env.GOOGLE_MAPS_API_KEY %>",
+	v: "weekly"
+});
 
-<script src="https://maps.googleapis.com/maps/api/js?key=bob&callback=initMap"
-async defer></script>
+window.onload = function() {
+    let map;
+	var geoCodeURL;
+	var features;
 
-<script defer>
-map = function() {
-
-  var map;
-  var key;
-  var keyURL;
-  var geoCodeURL;
-  var infoWindow;
-  var features;
-
-  function init(map) {
-
-    this.keyURL = 'config/keys.json';
-    this.geoCodeURL = 'https://maps.googleapis.com/maps/api/geocode/json?';
-
-    this.map = map;
-    this.infoWindow = new google.maps.InfoWindow;
-
-    this.features = [];
-
-//    this.loadKey();
-//    this.loadJSON('iot-platform', 'software');
-
-    this.map.data.addListener('click', function(event) {
-       id = event.feature.getId();
-       displayInfoWindow(event, map);
-       clickedPin(id);
-    });
-
-  } // init
-
-  // checks to see if infoWindow is created, if not creates it
-  function createInfoWindow() {
-    if (typeof(this.infoWindow) == "undefined") {
-      this.infoWindow = new google.maps.InfoWindow;
-    }
-  }
-
-  function setInfoWindowPosition(latLng) {
-    createInfoWindow();
-    this.infoWindow.setPosition(latLng);
-  }
-
-  function setInfoWindowContent(content) {
-    createInfoWindow();
-    this.infoWindow.setContent(content);
-  }
-
-  function openInfoWindow() {
-    createInfoWindow();
-    this.infoWindow.close();
-    this.infoWindow.open(this.map);
-  }
-
-  function closeInfoWindow() {
-    createInfoWindow();
-    this.infoWindow.close();
-   } // closeInfoWindow
-
-  function displayInfoWindow(event, map) {
-
-//   lat = event.latLng.lat();
-//   lng = event.latLng.lng();
-//   map.data.overrideStyle(event.feature, { fillColor: 'pink' });
-
-    name = event.feature.getProperty('name');
-    id = event.feature.getId();
-//    category = event.feature.getProperty('category');
-//    subCategory = event.feature.getProperty('sub-category');
-    content = '<b>' + name + '</b>';
-
-    setInfoWindowContent(content);
-    setInfoWindowPosition(event.latLng);
-    this.infoWindow.open(map);
-
-  } // displayInfoWindow
-
-  // get the Google Maps Javascript API key
-  function loadKey() {
-
-    $.ajax({
-      type: 'GET',
-      url: this.keyURL,
-      dataType: 'json',
-      cache: false,
-      error: function() { console.log('could not load the Google config'); },
-      success: function (data) {
-        $.each(data, function(index, key) {
-          if (key['service'] == 'google_maps') { this.key = data['key']; }
+    var categories;
+    var defaultCategory;
+    var defaultSubCategory;
+	
+    async function initMap() {
+        const { Map } = await google.maps.importLibrary("maps");
+        map = new Map(document.getElementById("mapDiv"), {
+            center: new google.maps.LatLng(33.589886, 7.603869),
+            zoom: 2,
+		});
+				
+        const infoWindow = new google.maps.InfoWindow({
+            content:"",
+            maxWidth:200,
         });
-      }
-    });
+		
+        const marker = new google.maps.Marker();
 
-  } // loadKey
-
-  function getKey() { return this.key; }
-
-  function setZoom(value) { this.map.setZoom(value); }
-  function setCenter(value) { this.map.setCenter(value); }
-
-  function resetZoom() {
-    setCenter({ lat: 33.589886, lng: -7.603869 });
-    setZoom(2);
-  } // resetZoom
-
-  function getGeoCodeURL() { return this.geoCodeURL; }
-
-  // https://stackoverflow.com/questions/23071590/how-can-i-determine-when-google-maps-loadgeojson-completes#31026419
-  /**
-   * Loads the geoJSON for organizations that produce one or more products in
-   * the category and subcategory
-   *
-   * @param str category product category slug e.g. 'iot-platform'
-   * @param str subCategory product sub-category slug e.g. 'consumer'
-   * @return null
-   */
-  function loadJSON(category, subCategory) {
-    url = 'map/product/category/' + category + '/subcategory/' + subCategory;
-    theMap = this.map;
-
-    $.ajax({
-      type: 'GET',
-      url: url,
-      dataType: 'json',
-      cache: false,
-      error: function() { console.log('could not load the map data'); },
-      success: function(data) {
-        features = theMap.data.addGeoJson(data);
-        closeInfoWindow();
-        removeFeatures();
-        resetZoom();
-        addFeatures(features);
-        logFeatures(features);
-      }
-    }); // .ajax
-
-  } // loadJSON
-
-   /**
-   * Loads the geoJSON for organizations that match a search term
-   *
-   * @param str term the search term
-   * @return null
-   */
-   function loadJSONbyTerm(term) {
-    url = 'map/organization?term=' + term;
-    theMap = this.map;
-
-    $.ajax({
-      type: 'GET',
-      url: url,
-      dataType: 'json',
-      cache: false,
-      error: function() { console.log('could not load the map data'); },
-      success: function(data) {
-        features = theMap.data.addGeoJson(data);
-        closeInfoWindow();
-        removeFeatures();
-        resetZoom();
-        addFeatures(features);
-        logFeatures(features);
-        zoomToOrganization(term);
-      }
-    }); // .ajax
-
-  } // loadJSONbyTerm
-
-  /**
-   * Add a feature to the 'features' collection so it can be tracked
-   *
-   * @param google.maps.Marker the marker
-   * @return null
-   */
-  function trackFeature(feature) {
-    this.map.features.push(feature);
-  }
-
-  /**
-   * Add the features to 'features' array
-   *
-   * @param array features array of Google Map Feature objects
-   * @return null
-   */
-  function addFeatures(features) {
-
-    features.forEach(function(feature) {
-      trackFeature(feature);
-    });
-
-  } // addFeatures
-
-  /**
-   * Write the properties of a Feature to the console
-   *
-   * @param array features array of Google Map Feature objects
-   * @return null
-   */
-  function logFeatures(features) {
-
-    features.forEach(function(feature) {
-      logFeature(feature);
-    });
-
-  } // logFeatures
-
-  /**
-   * Write the properties of a Feature to the console
-   *
-   * @param array feature Google Map Feature object
-   * @return null
-   */
-  function logFeature(feature) {
-
-    id = feature.getId();
-    name = feature.getProperty('name');
-    url = feature.getProperty('url');
-    geometry = feature.getGeometry();
-    geo = geometry.get();
-    console.log('id=' + id + ', name=' + name + ', url=' + url +
-      ' lat=' + geo.lat() + ', lng=' + geo.lng());
-
-  } // logFeature
-
-  /**
-   * Remove a Feature from the map
-   *
-   * @param Feature feature the marker to remove from the map
-   * @return null
-   */
-  function removeFeature(feature) {
-    this.map.map.data.remove(feature);
-  }
-
-  /**
-   * Remove all of the markers (Features) on the map
-   *
-   * @return null
-   */
-  function removeFeatures() {
-    theMap = this.map;
-    
-    $.each(theMap.features, function (index, feature) {
-      removeFeature(feature);
-    });
-
-  } // removeFeatures
-
-  return {
-    init:init,
-//    loadKey:loadKey,
-    getKey:getKey,
-    getGeoCodeURL:getGeoCodeURL,
-    setZoom:setZoom,
-    loadJSON:loadJSON,
-    loadJSONbyTerm:loadJSONbyTerm,
-    setCenter:setCenter,
-    logFeatures:logFeatures,
-    displayInfoWindow:displayInfoWindow,
-    setInfoWindowContent:setInfoWindowContent,
-    setInfoWindowPosition:setInfoWindowPosition,
-    closeInfoWindow:closeInfoWindow,
-    trackFeature:trackFeature,
-    removeFeature:removeFeatures,
-    removeFeatures:removeFeatures
-  }
-
-}(); // map
-
-iot = function() {
-
-  var categories;
-  var defaultCategory;
-  var defaultSubCategory;
-
-  function init() {
-    loadCategories();
-    this.defaultCategory = 'iot-platform';
-  }
-
-  function change(categories) { this.categories = categories; }
-
-  function getCategories() { return this.categories; }
-
-  function getDefaultCategory() { return this.defaultCategory; }
-
-  function setDefaultCategory(category) {
-    return this.defaultCategory = category;
-  }
-
-  function getDefaultSubCategory(category_slug) {
-    subCategory = '';
-    $.each(this.categories, function(index, category) {
-      if (category.slug == category_slug) {
-        subCategory = category.default_sub_category;
-      }
-    });
-    return subCategory;
-  }
-
-  function verify() {
-  }
-
-  return{
-    init:init,
-    change:change,
-    setDefaultCategory:setDefaultCategory,
-    getCategories:getCategories,
-    getDefaultCategory:getDefaultCategory,
-    getDefaultSubCategory:getDefaultSubCategory
-  }
-}();
-
-$(document).ready(function() {
-
-  iot.init();
-
-}); // document.ready
-
-function clickedPin(id) {
-
-  var feature = map.map.data.getFeatureById(id);
-  var name = feature.getProperty('name');
-
-  loadOrganization(id);
-  map.map.data.overrideStyle(feature, { icon: "http://maps.google.com/mapfiles/ms/icons/green-dot.png" });
-
-//  ga('send', 'event', [eventCategory], [eventAction], [eventLabel], [eventValue], [fieldsObject]);
-  ga('send', 'event', 'map', 'pin', name, id);
-
-} // clickedPin
-
-function clickedProduct(slug) {
-    loadProduct(slug);
-} // clickedProduct
-
-function clickedIntegration(slug) {
-    loadIntegration(slug);
-} // clickedProduct
-
-// style the radio buttons using iCheck
-function styleButtons() {
-
-  $('input').iCheck({
-    checkboxClass: 'icheckbox_square-purple',
-    radioClass: 'iradio_square-purple',
-    increaseArea: '20%' // optional
-  });
-
-} // styleButtons
-
-// search
-function search(search) {
-  term = search.value;
-  ga('send', 'event', 'search', 'term', term, 1);
-  searchOrganizations(term);
-  map.loadJSONbyTerm(term);
-}
-
-// setup the action when user clicks a category, so the sub-categories
-// are changed
-function setupCategoryClick() {
-  $('[name="primary_category_slug"]').on('ifChecked', function(event) {
-    categoryClicked(event);
-  });
-}
-
-// setup the action when user clicks a subCategory, so the orgs are loaded
-function setupSubCategoryClick() {
-  $('[name="secondary_category_slug"]').on('ifChecked', function(event) {
-    subCategoryClicked(event);
-  });
-}
-
-/**
- * Change the sub-category pane to list all of the sub-categories if a category
- * is selected
- *
- * @param event the jQuery event object
- * @return null
- */
-function categoryClicked(event) {
-
-  if (event) {
-    categorySlug = event.target.value;
-
-    //  ga('send', 'event', [eventCategory], [eventAction], [eventLabel], [eventValue], [fieldsObject]);
-    ga('send', 'event', 'category', 'filter', categorySlug, 1);
-
-    categories = iot.getCategories();
-
-    $(categories).each(function (index) {
-      if (categories[ index ][ "slug" ] == categorySlug) {
-
-        // get the HTML for the sub-catetories panel
-        $('#secondary_category').html(
-          getCategoriesHTML(categories[ index ]['subcategories'],
-            "secondary_category_slug")
-       );
-        styleButtons();
-        setupCategoryClick();
-        setupSubCategoryClick();
-        subCategory = iot.getDefaultSubCategory(categorySlug);
-        if (subCategory) {
-          $('#secondary_category').
-            find('[value="' + subCategory + '"]').iCheck('check');
+	    map.data.addListener('click', function(event) {
+	        id = event.feature.getId();
+	        displayInfoWindow(event);
+	        clickedPin(id);
+	    });		
+		
+        function resetZoom() {
+            map.setCenter(new google.maps.LatLng(33.589886, -7.603869));
+            map.setZoom(2);
         }
 
-        // update the list of organizations
-        loadOrganizations(categorySlug, subCategory);
-      }
-    });
-  }
+	    function displayInfoWindow(event) {
 
-} // categoryClicked
+	        lat = event.latLng.lat();
+	        lng = event.latLng.lng();
+	        map.data.overrideStyle(event.feature, { fillColor: 'pink' });
 
-function subCategoryClicked(event) {
+	        name = event.feature.getProperty('name');
+	        id = event.feature.getId();
+	        category = event.feature.getProperty('category');
+	        subCategory = event.feature.getProperty('sub-category');
+	        content = '<b>' + name + '</b>';
 
-  element = event.target;
-  subCategorySlug = element.value;
+	        infoWindow.setContent(content);
+            infoWindow.setPosition(event.latLng);
+            infoWindow.open(map);
+        }
+	
+        /**
+        *
+        * Load the geoJSON for organizations that produce one or more products in
+        * the category and subcategory
+        *
+        * @param str category product category slug e.g. 'iot-platform'
+        *
+        * @param str subCategory product sub-category slug e.g. 'consumer'
+        *
+        * @return null
+        *
+        */
+        function loadJSON(category, subCategory) {
+            url = 'map/product/category/' + category + '/subcategory/' + subCategory;
 
-  ga('send', 'event', 'subCategory', 'filter', subCategorySlug, 2);
+            $.ajax({
+                type: 'GET',
+                url: url,
+                dataType: 'json',
+                cache: false,
+                error: function() { console.log('could not load the map data'); },
+                success: function(data) {
+                    features = map.data.addGeoJson(data);
+                    infoWindow.close();
+                    removeFeatures();
+                    resetZoom();
+                    addFeatures(features);
+                    logFeatures(features);
+                }
+            });
+        }
+		
+        /**
+        *
+        * Loads the geoJSON for organizations that match a search term
+        *
+        * @param str term the search term
+        *
+        * @return null
+        *
+        */
+        function loadJSONbyTerm(term) {
+            url = 'map/organization?term=' + term;
 
-  // get the currently selected categorySlug
-  categorySlug = $('[name="primary_category_slug"]:checked').val();
+            $.ajax({
+                type: 'GET',
+                url: url,
+                dataType: 'json',
+                cache: false,
+                error: function() { console.log('could not load the map data'); },
+                success: function(data) {
+                    features = map.data.addGeoJson(data);
+                    infoWindow.close();
+                    removeFeatures();
+                    resetZoom();
+                    addFeatures(features);
+                    logFeatures(features);
+                    zoomToOrganization(term);
+                }
+            });
+        }
 
-  loadOrganizations(categorySlug, subCategorySlug);
-  $('#organizations').html('<i>loading...</i>');
+        /**
+        * Add the features to 'features' array
+        *
+        * @param array features array of Google Map Feature objects
+        * @return null
+        */
+        function addFeatures(features) {
+            features.forEach(function(feature) {
+                map.features.push(feature);
+            });
+        } 
 
-  map.loadJSON(categorySlug, subCategorySlug);
+        /**
+        * Write the properties of a Feature to the console
+        *
+        * @param array features array of Google Map Feature objects
+        * @return null
+        */
+        function logFeatures(features) {
+            features.forEach(function(feature) {
+                logFeature(feature);
+            });
+        }
 
-} // subCategoryClicked
+        /**
+        * Write the properties of a Feature to the console
+        *
+        * @param array feature Google Map Feature object
+        * @return null
+        */
+        function logFeature(feature) {
+            id = feature.getId();
+            name = feature.getProperty('name');
+            url = feature.getProperty('url');
+            geometry = feature.getGeometry();
+            geo = geometry.get();
+            console.log('id=' + id + ', name=' + name + ', url=' + url +
+                        ' lat=' + geo.lat() + ', lng=' + geo.lng());
+        } 
 
-/**
- * Load all organizations that deliver products in a given category or
- * subcategory
- *
- * @param str categorySlug short RESTful tag for the category e.g. 'hardware'
- * @param str subCategorySlug short RESTful tag for the sub-category e.g. 'cpu'
- * @return null
- */
-function loadOrganizations(categorySlug, subCategorySlug) {
+        /**
+        * Remove all of the markers (Features) on the map
+        *
+        * @return null
+        */
+        function removeFeatures() {
+            $.each(map.features, function (index, feature) {
+                map.data.remove(feature);
+            });
+        }
 
-  url = '/organization/product/category/' + categorySlug;
-  if (subCategorySlug) { url += '/subcategory/' + subCategorySlug; }
+        function changeCategories(newCategories) { categories = newCategories; }
 
-  $.ajax({
-    type: 'GET',
-    url: url,
-    cache: false,
-    error: function() { console.log('could not load the organizations'); },
-    success: function(data) {
-      $('#organizations').html(data);
+        function getCategories() { return categories; }
+
+        function getDefaultCategory() { return defaultCategory; }
+
+        function setDefaultCategory(category) {
+            return defaultCategory = category;
+        }
+
+        function getDefaultSubCategory(category_slug) {
+            subCategory = '';
+            $.each(categories, function(index, category) {
+                if (category.slug == category_slug) {
+                subCategory = category.default_sub_category;
+                }
+            });
+            return subCategory;
+        }
+		
+        /**
+         * Grab all of the categories an sub-categories from the server
+         *
+         * @return null
+         */
+        function loadCategories() {
+
+            url = 'product/categories/';
+
+            $.ajax({
+                type: 'GET',
+                url: url,
+                dataType: 'json',
+                cache: false,
+                error: function() { console.log('could not load the categories'); },
+                success: function(data) {
+
+                    changeCategories(data);
+                    categories = getCategories();
+                    categorySlug = getDefaultCategory();
+                    $('#primary_category').html(
+                        getCategoriesHTML(categories, "primary_category_slug")
+                    );
+
+                    subCategorySlug = getDefaultSubCategory(categorySlug);
+                    $('#secondary_category').html(
+                        getCategoriesHTML(categories[ 0 ]['subcategories'],
+                        "secondary_category_slug")
+                    );
+
+                    // click the radio buttons for the default category and sub-category
+                    //$('#primary_category').find('[ value="' + categorySlug + '" ]').iCheck('check');
+                
+				    query = '[ value="' + categorySlug + '" ]';
+                    $('#primary_category').find(query).each(function() {
+                        return new Promise((resolve, reject) => {
+                            try {
+                                $this.iCheck('check');
+                                resolve();
+                            } catch (err) {
+                                reject(err);
+                            }
+                        });
+                    });
+				  
+                    // $('#secondary_category').find('[ value="' + subCategorySlug + '" ]').iCheck('check');
+					query = '[ value="' + subCategorySlug + '" ]';
+                    $('#secondary_category').find(query).each(function() {
+                        return new Promise((resolve, reject) => {
+                            try {
+                                $this.iCheck('check');
+                                resolve();
+                            } catch (err) {
+                                reject(err);
+                            }
+                        });
+                    });                   
+
+                  styleButtons();
+                  setupCategoryClick();
+                  setupSubCategoryClick();
+
+                  loadOrganizations(categorySlug, subCategorySlug);
+                }
+            }); 
+        }
+		
+        function clickedPin(id) {
+            var feature = map.data.getFeatureById(id);
+            var name = feature.getProperty('name');
+
+            loadOrganization(id);
+            map.data.overrideStyle(feature, {icon: "http://maps.google.com/mapfiles/ms/icons/green-dot.png"});
+        }
+
+        // style the radio buttons using iCheck
+        function styleButtons() {
+            $('input').iCheck({
+                checkboxClass: 'icheckbox_square-purple',
+                radioClass: 'iradio_square-purple',
+                increaseArea: '20%' // optional
+            });
+        }
+
+        // search
+        function search(search) {
+            term = search.value;
+            searchOrganizations(term);
+            loadJSONbyTerm(term);
+        }
+
+        // setup the action when user clicks a category, so the sub-categories
+        // are changed
+        function setupCategoryClick() {
+            $('[name="primary_category_slug"]').on('ifChecked', function(event) {
+                categoryClicked(event);
+            });
+        }
+
+        // setup the action when user clicks a subCategory, so the orgs are loaded
+        function setupSubCategoryClick() {
+            $('[name="secondary_category_slug"]').on('ifChecked', function(event) {
+                subCategoryClicked(event);
+            });
+        }
+
+        /**
+         *
+         * Change the sub-category pane to list all of the sub-categories if a category
+         * is selected
+         *
+         * @param event the jQuery event object
+         * 
+         * @return null
+         *
+         */
+        function categoryClicked(event) {
+
+            if (event) {
+                categorySlug = event.target.value;
+                categories = getCategories();
+
+                $(categories).each(function (index) {
+                    if (categories[ index ][ "slug" ] == categorySlug) {
+
+                        // get the HTML for the sub-catetories panel
+                        $('#secondary_category').html(
+                            getCategoriesHTML(categories[ index ]['subcategories'],
+                            "secondary_category_slug")
+                        );
+                        styleButtons();
+                        setupCategoryClick();
+                        setupSubCategoryClick();
+                        subCategory = getDefaultSubCategory(categorySlug);
+                        if (subCategory) {
+                            $('#secondary_category').
+                            find('[value="' + subCategory + '"]').iCheck('check');
+                        }
+
+                        // update the list of organizations
+                        loadOrganizations(categorySlug, subCategory);
+                    }
+                });
+            }
+        } 
+
+        function subCategoryClicked(event) {
+            element = event.target;
+            subCategorySlug = element.value;
+
+            // get the currently selected categorySlug
+            categorySlug = $('[name="primary_category_slug"]:checked').val();
+
+            loadOrganizations(categorySlug, subCategorySlug);
+            $('#organizations').html('<i>loading...</i>');
+
+            loadJSON(categorySlug, subCategorySlug);
+        }
+
+        // zoom the map to the organization
+        function zoomToOrganization(slug) {
+            $('.panel').removeClass('on');
+            $('#' + slug + '-panel').toggleClass('on');
+
+            latitude = Number($('#' + slug + '-lat').val());
+            longitude = Number($('#' + slug + '-lng').val());
+            if (latitude && longitude) {
+                var position = { lat: latitude, lng: longitude };
+                map.setCenter(position);
+                map.setZoom(10);
+            }
+        }
+        /**
+         *
+         * Load all organizations that deliver products in a given category or
+         * subcategory.
+         *
+         * @param str categorySlug short RESTful tag for the category e.g. 'hardware'
+         *
+         * @param str subCategorySlug short RESTful tag for the sub-category e.g. 'cpu'
+         *
+         * @return null
+         */
+        function loadOrganizations(categorySlug, subCategorySlug) {
+
+            url = '/organization/product/category/' + categorySlug;
+            if (subCategorySlug) { url += '/subcategory/' + subCategorySlug; }
+            $.ajax({
+                type: 'GET',
+                url: url,
+                cache: false,
+                error: function() { console.log('could not load the organizations'); },
+                success: function(data) {
+                    $('#organizations').html(data);
+                }
+            });
+        }
+
+        /**
+         * Load all products that match the search criteria
+         *
+         * @param str term search term
+         * @return null
+         */
+        function searchOrganizations(term) {
+            url = '/organization?term=' + term;
+            $.ajax({
+                type: 'GET',
+                url: url,
+                cache: false,
+                error: function() { console.log('could not load the organizations'); },
+                success: function(data) {
+                    $('#organizations').html(data);
+                }
+            });
+        }
+
+        /**
+         * Load a specific organization
+         *
+         * @param str slug short RESTful tag for the organization
+         * @return null
+         */
+        function loadOrganization(slug) {
+            url = '/organization/' + slug;
+            $.ajax({
+                type: 'GET',
+                url: url,
+                cache: false,
+                error: function() { console.log('could not load the organization'); },
+                success: function(data) {
+                    $('#organizations').html(data);
+                }
+            });
+        }
+
+        /**
+         * Load a specific product
+         *
+         * @param str slug short RESTful tag for the product
+         * @return null
+         */
+        function loadProduct(slug) {
+            url = '/product/' + slug;
+            $.ajax({
+                type: 'GET',
+                url: url,
+                cache: false,
+                error: function() { console.log('could not load the organization'); },
+                success: function(data) {
+                    $('#organizations').html(data);
+                }
+            });
+        }
+
+        /**
+         * Load a specific integration
+         *
+         * @param str slug short RESTful tag for the integration
+         * @return null
+         */
+        function loadIntegration(slug) {
+            url = '/product/' + slug;
+            $.ajax({
+                type: 'GET',
+                url: url,
+                cache: false,
+                error: function() { console.log('could not load the organization'); },
+                success: function(data) {
+                    $('#organizations').html(data);
+                }
+            });
+        }
+
+        /**
+         * Generates a radio button for each category
+         *
+         * @param array categories list of categories
+         * @param str field field 'id' for the <input> div
+         */
+        function getCategoriesHTML(theCategories, field) {
+
+            html = '';
+
+            for (i=0; i < theCategories.length; i++) {
+                slug = theCategories[i]['slug'];
+                name = theCategories[i]['name'];
+                html += '<div class="iradio">';
+                html += '<input type="radio" name="' + field + '" id="' + field + '[' + i + ']" ';
+                html += 'value="' + theCategories[i]['slug'] + '">';
+                html += ' <label for="' + field + '[' + i + ']">' + name + '</label>';
+                html += '</div>';
+            }
+
+            return html;
+        }
+		
+        loadCategories();
+        defaultCategory = 'iot-platform';
+	    loadJSON('iot-platform', 'software');
     }
-  }); // .ajax
 
-} // loadOrganizations
-
-/**
- * Load all products that match the search criteria
- *
- * @param str term search term
- * @return null
- */
-function searchOrganizations(term) {
-
-  url = '/organization?term=' + term;
-
-  $.ajax({
-    type: 'GET',
-    url: url,
-    cache: false,
-    error: function() { console.log('could not load the organizations'); },
-    success: function(data) {
-      $('#organizations').html(data);
-    }
-  }); // .ajax
-
-} // searchOrganizations
-
-/**
- * Load a specific organization
- *
- * @param str slug short RESTful tag for the organization
- * @return null
- */
-function loadOrganization(slug) {
-
-  url = '/organization/' + slug;
-
-  $.ajax({
-    type: 'GET',
-    url: url,
-    cache: false,
-    error: function() { console.log('could not load the organization'); },
-    success: function(data) {
-      $('#organizations').html(data);
-    }
-  }); // .ajax
-
-} // loadOrganization
-
-/**
- * Load a specific product
- *
- * @param str slug short RESTful tag for the product
- * @return null
- */
-function loadProduct(slug) {
-
-  url = '/product/' + slug;
-
-  $.ajax({
-    type: 'GET',
-    url: url,
-    cache: false,
-    error: function() { console.log('could not load the organization'); },
-    success: function(data) {
-      $('#organizations').html(data);
-    }
-  }); // .ajax
-
-} // loadProduct
-
-/**
- * Load a specific integration
- *
- * @param str slug short RESTful tag for the integration
- * @return null
- */
-function loadIntegration(slug) {
-
-  url = '/product/' + slug;
-
-  $.ajax({
-    type: 'GET',
-    url: url,
-    cache: false,
-    error: function() { console.log('could not load the organization'); },
-    success: function(data) {
-      $('#organizations').html(data);
-    }
-  }); // .ajax
-
-} // loadIntegration
-
-// zoom the map to the organization
-function zoomToOrganization(slug) {
-
-  $('.panel').removeClass('on');
-  $('#' + slug + '-panel').toggleClass('on');
-
-  latitude = Number($('#' + slug + '-lat').val());
-  longitude = Number($('#' + slug + '-lng').val());
-
-  if (latitude && longitude) {
-    var position = { lat: latitude, lng: longitude };
-    map.map.setCenter(position);
-    map.map.setZoom(10);
-  }
-
-} // zoomToOrganization
-
-/**
- * Grab all of the categories an sub-categories from the server
- *
- * @return null
- */
-function loadCategories() {
-
-  url = 'product/categories/';
-
-  $.ajax({
-    type: 'GET',
-    url: url,
-    dataType: 'json',
-    cache: false,
-    error: function() { console.log('could not load the categories'); },
-    success: function(data) {
-
-      iot.change(data);
-      categories = iot.getCategories();
-      categorySlug = iot.getDefaultCategory();
-      $('#primary_category').html(
-          getCategoriesHTML(categories, "primary_category_slug")
-     );
-
-      subCategorySlug = iot.getDefaultSubCategory(categorySlug);
-      $('#secondary_category').html(
-        getCategoriesHTML(categories[ 0 ]['subcategories'],
-          "secondary_category_slug")
-     );
-
-      // click the radio buttons for the default category and sub-category
-      $('#primary_category').find('[ value="' + categorySlug + '" ]').iCheck('check');
-      $('#secondary_category').find('[ value="' + subCategorySlug + '" ]').iCheck('check');
-
-      styleButtons();
-      setupCategoryClick();
-      setupSubCategoryClick();
-
-      loadOrganizations(categorySlug, subCategorySlug);
-    }
-  }); // .ajax
-
-} // loadCategories
-
-/**
- * Generates a radio button for each category
- *
- * @param array categories list of categories
- * @param str field field 'id' for the <input> div
- */
-function getCategoriesHTML(categories, field) {
-
-  html = '';
-
-  for (i=0; i < categories.length; i++) {
-    slug = categories[ i ]['slug'];
-    name = categories[ i ]['name'];
-    html += '<div class="iradio">';
-    html += '<input type="radio" name="' + field + '" id="' + field + '[' + i + ']" ';
-    html += 'value="' + categories[ i ]['slug'] + '">';
-    html += ' <label for="' + field + '[' + i + ']">' + name + '</label>';
-    html += '</div>';
-  }
-
-  return html;
-
-} // getCategoriesHTML
+    initMap();    // create the Map object
+}
 </script>
-<%- include('header'); %>
 
-<%- include('navbar'); %>
+<%- include('header'); -%>
+	<%- include('navbar'); -%>
 
 <div class="container-fluid grid">
 
@@ -697,9 +546,11 @@ function getCategoriesHTML(categories, field) {
     </div> <!-- panel -->
   </div>
 
-  <div class="col-sm-7" id="map">
-  </div>
-
+  <!--
+  <div class="col-sm-7" id="mapDiv"></div>
+  -->
+  <div id="mapDiv" style="width: 50%; height: 400px;"></div>
+	
   <div class="col-sm-3" id="organizations" class="pre-scrollable">
   </div>
 
@@ -708,712 +559,3 @@ function getCategoriesHTML(categories, field) {
 </div> <!-- container -->
 
 <%- include('footer'); %>
-=======
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
-<style>
-  p, div {
-  	font-family:"Segoe UI",Tahoma,Verdana,Arial,Helvetica;
-  }
-  label {
-    font-weight: normal !important;
-  }
-  .panel {
-    border-color:grey;
-    background-color:white;
-  }
-
-  .panel.on {
-    border-color:green;
-  }
-
-  .panel.hover {
-    border-color:blue;
-  }
-
-</style>
-<style>
-  /* set the map height explicitly to set size of div element that contains map
-   */
-  #map {
-    height: 100%;
-  }
-  /* Optional: Makes the sample page fill the window. */
-  html, body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-  }
-</style>
-<script>
-function initMap() {
-  map.init(
-    new google.maps.Map(document.getElementById('map'), {
-      center: { lat: 33.589886, lng: -7.603869 },
-      zoom: 2
-    })
- );
-}
-</script>
-<script src="https://maps.googleapis.com/maps/api/js?key=bob&callback=initMap"
-async defer></script>
-
-<script defer>
-map = function() {
-
-  var map;
-  var key;
-  var keyURL;
-  var geoCodeURL;
-  var infoWindow;
-  var features;
-
-  function init(map) {
-
-    this.keyURL = 'config/keys.json';
-    this.geoCodeURL = 'https://maps.googleapis.com/maps/api/geocode/json?';
-
-    this.map = map;
-    this.infoWindow = new google.maps.InfoWindow;
-
-    this.features = [];
-
-    this.loadKey();
-    this.loadJSON('iot-platform', 'software');
-
-    this.map.data.addListener('click', function(event) {
-       id = event.feature.getId();
-       displayInfoWindow(event, map);
-       clickedPin(id);
-    });
-
-  } // init
-
-  // checks to see if infoWindow is created, if not creates it
-  function createInfoWindow() {
-    if (typeof(this.infoWindow) == "undefined") {
-      this.infoWindow = new google.maps.InfoWindow;
-    }
-  }
-
-  function setInfoWindowPosition(latLng) {
-    createInfoWindow();
-    this.infoWindow.setPosition(latLng);
-  }
-
-  function setInfoWindowContent(content) {
-    createInfoWindow();
-    this.infoWindow.setContent(content);
-  }
-
-  function openInfoWindow() {
-    createInfoWindow();
-    this.infoWindow.close();
-    this.infoWindow.open(this.map);
-  }
-
-  function closeInfoWindow() {
-    createInfoWindow();
-    this.infoWindow.close();
-   } // closeInfoWindow
-
-  function displayInfoWindow(event, map) {
-
-//   lat = event.latLng.lat();
-//   lng = event.latLng.lng();
-//   map.data.overrideStyle(event.feature, { fillColor: 'pink' });
-
-    name = event.feature.getProperty('name');
-    id = event.feature.getId();
-//    category = event.feature.getProperty('category');
-//    subCategory = event.feature.getProperty('sub-category');
-    content = '<b>' + name + '</b>';
-
-    setInfoWindowContent(content);
-    setInfoWindowPosition(event.latLng);
-    this.infoWindow.open(map);
-
-  } // displayInfoWindow
-
-  // get the Google Maps Javascript API key
-  function loadKey() {
-
-    $.ajax({
-      type: 'GET',
-      url: this.keyURL,
-      dataType: 'json',
-      cache: false,
-      error: function() { console.log('could not load the config'); },
-      success: function (data) {
-        $.each(data, function(index, key) {
-          if (key['service'] == 'google_maps') { this.key = data['key']; }
-        });
-      }
-    });
-
-  } // loadKey
-
-  function getKey() { return this.key; }
-
-  function setZoom(value) { this.map.setZoom(value); }
-  function setCenter(value) { this.map.setCenter(value); }
-
-  function resetZoom() {
-    setCenter({ lat: 33.589886, lng: -7.603869 });
-    setZoom(2);
-  } // resetZoom
-
-  function getGeoCodeURL() { return this.geoCodeURL; }
-
-  // https://stackoverflow.com/questions/23071590/how-can-i-determine-when-google-maps-loadgeojson-completes#31026419
-  /**
-   * Loads the geoJSON for organizations that produce one or more products in
-   * the category and subcategory
-   *
-   * @param str category product category slug e.g. 'iot-platform'
-   * @param str subCategory product sub-category slug e.g. 'consumer'
-   * @return null
-   */
-  function loadJSON(category, subCategory) {
-    url = 'map/product/category/' + category + '/subcategory/' + subCategory;
-    theMap = this.map;
-
-    $.ajax({
-      type: 'GET',
-      url: url,
-      dataType: 'json',
-      cache: false,
-      error: function() { console.log('could not load the map data'); },
-      success: function(data) {
-        features = theMap.data.addGeoJson(data);
-        closeInfoWindow();
-        removeFeatures();
-        resetZoom();
-        addFeatures(features);
-        logFeatures(features);
-      }
-    }); // .ajax
-
-  } // loadJSON
-
-   /**
-   * Loads the geoJSON for organizations that match a search term
-   *
-   * @param str term the search term
-   * @return null
-   */
-   function loadJSONbyTerm(term) {
-    url = 'map/organization?term=' + term;
-    theMap = this.map;
-
-    $.ajax({
-      type: 'GET',
-      url: url,
-      dataType: 'json',
-      cache: false,
-      error: function() { console.log('could not load the map data'); },
-      success: function(data) {
-        features = theMap.data.addGeoJson(data);
-        closeInfoWindow();
-        removeFeatures();
-        resetZoom();
-        addFeatures(features);
-        logFeatures(features);
-        zoomToOrganization(term);
-      }
-    }); // .ajax
-
-  } // loadJSONbyTerm
-
-  /**
-   * Add a feature to the 'features' collection so it can be tracked
-   *
-   * @param google.maps.Marker the marker
-   * @return null
-   */
-  function trackFeature(feature) {
-    this.map.features.push(feature);
-  }
-
-  /**
-   * Add the features to 'features' array
-   *
-   * @param array features array of Google Map Feature objects
-   * @return null
-   */
-  function addFeatures(features) {
-
-    features.forEach(function(feature) {
-      trackFeature(feature);
-    });
-
-  } // addFeatures
-
-  /**
-   * Write the properties of a Feature to the console
-   *
-   * @param array features array of Google Map Feature objects
-   * @return null
-   */
-  function logFeatures(features) {
-
-    features.forEach(function(feature) {
-      logFeature(feature);
-    });
-
-  } // logFeatures
-
-  /**
-   * Write the properties of a Feature to the console
-   *
-   * @param array feature Google Map Feature object
-   * @return null
-   */
-  function logFeature(feature) {
-
-    id = feature.getId();
-    name = feature.getProperty('name');
-    url = feature.getProperty('url');
-    geometry = feature.getGeometry();
-    geo = geometry.get();
-    console.log('id=' + id + ', name=' + name + ', url=' + url +
-      ' lat=' + geo.lat() + ', lng=' + geo.lng());
-
-  } // logFeature
-
-  /**
-   * Remove a Feature from the map
-   *
-   * @param Feature feature the marker to remove from the map
-   * @return null
-   */
-  function removeFeature(feature) {
-    this.map.map.data.remove(feature);
-  }
-
-  /**
-   * Remove all of the markers (Features) on the map
-   *
-   * @return null
-   */
-  function removeFeatures() {
-    theMap = this.map;
-    
-    $.each(theMap.features, function (index, feature) {
-      removeFeature(feature);
-    });
-
-  } // removeFeatures
-
-  return {
-    init:init,
-    loadKey:loadKey,
-    getKey:getKey,
-    getGeoCodeURL:getGeoCodeURL,
-    setZoom:setZoom,
-    loadJSON:loadJSON,
-    loadJSONbyTerm:loadJSONbyTerm,
-    setCenter:setCenter,
-    logFeatures:logFeatures,
-    displayInfoWindow:displayInfoWindow,
-    setInfoWindowContent:setInfoWindowContent,
-    setInfoWindowPosition:setInfoWindowPosition,
-    closeInfoWindow:closeInfoWindow,
-    trackFeature:trackFeature,
-    removeFeature:removeFeatures,
-    removeFeatures:removeFeatures
-  }
-
-}(); // map
-
-iot = function() {
-
-  var categories;
-  var defaultCategory;
-  var defaultSubCategory;
-
-  function init() {
-    loadCategories();
-    this.defaultCategory = 'iot-platform';
-  }
-
-  function change(categories) { this.categories = categories; }
-
-  function getCategories() { return this.categories; }
-
-  function getDefaultCategory() { return this.defaultCategory; }
-
-  function setDefaultCategory(category) {
-    return this.defaultCategory = category;
-  }
-
-  function getDefaultSubCategory(category_slug) {
-    subCategory = '';
-    $.each(this.categories, function(index, category) {
-      if (category.slug == category_slug) {
-        subCategory = category.default_sub_category;
-      }
-    });
-    return subCategory;
-  }
-
-  function verify() {
-  }
-
-  return{
-    init:init,
-    change:change,
-    setDefaultCategory:setDefaultCategory,
-    getCategories:getCategories,
-    getDefaultCategory:getDefaultCategory,
-    getDefaultSubCategory:getDefaultSubCategory
-  }
-}();
-
-$(document).ready(function() {
-
-  iot.init();
-
-}); // document.ready
-
-function clickedPin(id) {
-
-  var feature = map.map.data.getFeatureById(id);
-  var name = feature.getProperty('name');
-
-  loadOrganization(id);
-  map.map.data.overrideStyle(feature, { icon: "http://maps.google.com/mapfiles/ms/icons/green-dot.png" });
-
-//  ga('send', 'event', [eventCategory], [eventAction], [eventLabel], [eventValue], [fieldsObject]);
-  ga('send', 'event', 'map', 'pin', name, id);
-
-} // clickedPin
-
-function clickedProduct(slug) {
-    loadProduct(slug);
-} // clickedProduct
-
-function clickedIntegration(slug) {
-    loadIntegration(slug);
-} // clickedProduct
-
-// style the radio buttons using iCheck
-function styleButtons() {
-
-  $('input').iCheck({
-    checkboxClass: 'icheckbox_square-purple',
-    radioClass: 'iradio_square-purple',
-    increaseArea: '20%' // optional
-  });
-
-} // styleButtons
-
-// search
-function search(search) {
-  term = search.value;
-  ga('send', 'event', 'search', 'term', term, 1);
-  searchOrganizations(term);
-  map.loadJSONbyTerm(term);
-}
-
-// setup the action when user clicks a category, so the sub-categories
-// are changed
-function setupCategoryClick() {
-  $('[name="primary_category_slug"]').on('ifChecked', function(event) {
-    categoryClicked(event);
-  });
-}
-
-// setup the action when user clicks a subCategory, so the orgs are loaded
-function setupSubCategoryClick() {
-  $('[name="secondary_category_slug"]').on('ifChecked', function(event) {
-    subCategoryClicked(event);
-  });
-}
-
-/**
- * Change the sub-category pane to list all of the sub-categories if a category
- * is selected
- *
- * @param event the jQuery event object
- * @return null
- */
-function categoryClicked(event) {
-
-  if (event) {
-    categorySlug = event.target.value;
-
-    //  ga('send', 'event', [eventCategory], [eventAction], [eventLabel], [eventValue], [fieldsObject]);
-    ga('send', 'event', 'category', 'filter', categorySlug, 1);
-
-    categories = iot.getCategories();
-
-    $(categories).each(function (index) {
-      if (categories[ index ][ "slug" ] == categorySlug) {
-
-        // get the HTML for the sub-catetories panel
-        $('#secondary_category').html(
-          getCategoriesHTML(categories[ index ]['subcategories'],
-            "secondary_category_slug")
-       );
-        styleButtons();
-        setupCategoryClick();
-        setupSubCategoryClick();
-        subCategory = iot.getDefaultSubCategory(categorySlug);
-        if (subCategory) {
-          $('#secondary_category').
-            find('[value="' + subCategory + '"]').iCheck('check');
-        }
-
-        // update the list of organizations
-        loadOrganizations(categorySlug, subCategory);
-      }
-    });
-  }
-
-} // categoryClicked
-
-function subCategoryClicked(event) {
-
-  element = event.target;
-  subCategorySlug = element.value;
-
-  ga('send', 'event', 'subCategory', 'filter', subCategorySlug, 2);
-
-  // get the currently selected categorySlug
-  categorySlug = $('[name="primary_category_slug"]:checked').val();
-
-  loadOrganizations(categorySlug, subCategorySlug);
-  $('#organizations').html('<i>loading...</i>');
-
-  map.loadJSON(categorySlug, subCategorySlug);
-
-} // subCategoryClicked
-
-/**
- * Load all organizations that deliver products in a given category or
- * subcategory
- *
- * @param str categorySlug short RESTful tag for the category e.g. 'hardware'
- * @param str subCategorySlug short RESTful tag for the sub-category e.g. 'cpu'
- * @return null
- */
-function loadOrganizations(categorySlug, subCategorySlug) {
-
-  url = '/organization/product/category/' + categorySlug;
-  if (subCategorySlug) { url += '/subcategory/' + subCategorySlug; }
-
-  $.ajax({
-    type: 'GET',
-    url: url,
-    cache: false,
-    error: function() { console.log('could not load the organizations'); },
-    success: function(data) {
-      $('#organizations').html(data);
-    }
-  }); // .ajax
-
-} // loadOrganizations
-
-/**
- * Load all products that match the search criteria
- *
- * @param str term search term
- * @return null
- */
-function searchOrganizations(term) {
-
-  url = '/organization?term=' + term;
-
-  $.ajax({
-    type: 'GET',
-    url: url,
-    cache: false,
-    error: function() { console.log('could not load the organizations'); },
-    success: function(data) {
-      $('#organizations').html(data);
-    }
-  }); // .ajax
-
-} // searchOrganizations
-
-/**
- * Load a specific organization
- *
- * @param str slug short RESTful tag for the organization
- * @return null
- */
-function loadOrganization(slug) {
-
-  url = '/organization/' + slug;
-
-  $.ajax({
-    type: 'GET',
-    url: url,
-    cache: false,
-    error: function() { console.log('could not load the organization'); },
-    success: function(data) {
-      $('#organizations').html(data);
-    }
-  }); // .ajax
-
-} // loadOrganization
-
-/**
- * Load a specific product
- *
- * @param str slug short RESTful tag for the product
- * @return null
- */
-function loadProduct(slug) {
-
-  url = '/product/' + slug;
-
-  $.ajax({
-    type: 'GET',
-    url: url,
-    cache: false,
-    error: function() { console.log('could not load the organization'); },
-    success: function(data) {
-      $('#organizations').html(data);
-    }
-  }); // .ajax
-
-} // loadProduct
-
-/**
- * Load a specific integration
- *
- * @param str slug short RESTful tag for the integration
- * @return null
- */
-function loadIntegration(slug) {
-
-  url = '/product/' + slug;
-
-  $.ajax({
-    type: 'GET',
-    url: url,
-    cache: false,
-    error: function() { console.log('could not load the organization'); },
-    success: function(data) {
-      $('#organizations').html(data);
-    }
-  }); // .ajax
-
-} // loadIntegration
-
-// zoom the map to the organization
-function zoomToOrganization(slug) {
-
-  $('.panel').removeClass('on');
-  $('#' + slug + '-panel').toggleClass('on');
-
-  latitude = Number($('#' + slug + '-lat').val());
-  longitude = Number($('#' + slug + '-lng').val());
-
-  if (latitude && longitude) {
-    var position = { lat: latitude, lng: longitude };
-    map.map.setCenter(position);
-    map.map.setZoom(10);
-  }
-
-} // zoomToOrganization
-
-/**
- * Grab all of the categories an sub-categories from the server
- *
- * @return null
- */
-function loadCategories() {
-
-  url = 'product/categories/';
-
-  $.ajax({
-    type: 'GET',
-    url: url,
-    dataType: 'json',
-    cache: false,
-    error: function() { console.log('could not load the categories'); },
-    success: function(data) {
-
-      iot.change(data);
-      categories = iot.getCategories();
-      categorySlug = iot.getDefaultCategory();
-      $('#primary_category').html(
-          getCategoriesHTML(categories, "primary_category_slug")
-     );
-
-      subCategorySlug = iot.getDefaultSubCategory(categorySlug);
-      $('#secondary_category').html(
-        getCategoriesHTML(categories[ 0 ]['subcategories'],
-          "secondary_category_slug")
-     );
-
-      // click the radio buttons for the default category and sub-category
-      $('#primary_category').find('[ value="' + categorySlug + '" ]').iCheck('check');
-      $('#secondary_category').find('[ value="' + subCategorySlug + '" ]').iCheck('check');
-
-      styleButtons();
-      setupCategoryClick();
-      setupSubCategoryClick();
-
-      loadOrganizations(categorySlug, subCategorySlug);
-    }
-  }); // .ajax
-
-} // loadCategories
-
-/**
- * Generates a radio button for each category
- *
- * @param array categories list of categories
- * @param str field field 'id' for the <input> div
- */
-function getCategoriesHTML(categories, field) {
-
-  html = '';
-
-  for (i=0; i < categories.length; i++) {
-    slug = categories[ i ]['slug'];
-    name = categories[ i ]['name'];
-    html += '<div class="iradio">';
-    html += '<input type="radio" name="' + field + '" id="' + field + '[' + i + ']" ';
-    html += 'value="' + categories[ i ]['slug'] + '">';
-    html += ' <label for="' + field + '[' + i + ']">' + name + '</label>';
-    html += '</div>';
-  }
-
-  return html;
-
-} // getCategoriesHTML
-
-</script>
-
-<% include _header %>
-<% include navbar %>
-<div class="container-fluid grid">
-
-<div class="row">
-       
-  <div class="col-sm-2" id="category-panel">
-    <input name="search" type="text" class="form-control" placeholder="search term" required autofocus onChange="search(this);">
-    <b>Category</b>
-    <div class="panel panel-default" id="primary_category">
-    </div> <!-- panel -->
-
-    <b>Sub-Category</b>
-    <div class="panel panel-default" id="secondary_category">
-    </div> <!-- panel -->
-  </div>
-
-  <div class="col-sm-7" id="map">
-  </div>
-
-  <div class="col-sm-3" id="organizations" class="pre-scrollable">
-  </div>
-
-</div> <!-- row -->
-
-</div> <!-- container -->
-<% include _footer %>

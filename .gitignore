@@ -1,3 +1,4 @@
+.env
 docs/IoT Thing of Things.xlsx
 iotmap-*.json
 static/config/keys.json
@@ -9,7 +10,7 @@ node_modules
 npm
 *.sln
 *.esproj
-iot_map.njsproj
+*.njsproj
 package_ts.json
 iot_map.njsproj.user
 *-boilerplate.js

@@ -3,21 +3,23 @@ version: "3.7"
 services:
 
   iot_map:
-    container_name: iot_map
     build: .
-#    restart: always
+#       restart: always
     ports:
       - "3000:3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
-      # self-hosted Mongo
-      - MONGODB_URI=mongodb://localhost:27017/iotmap
+      # self-hosted Mongo 
+      - MONGODB_URI=mongodb://host.docker.internal:27017/iotmap
+      - DEBUG=express:*
 
 #    links:
 #      - mongo
 #    depends_on: 
 #      - mongo
 # 
-        # in container
+# in container
 #   mongo:
 #       container_name: mongo
 #       image: mongo:latest

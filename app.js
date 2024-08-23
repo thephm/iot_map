@@ -1,5 +1,12 @@
 // IoT Map main Node.js file
 
+// Load the `.env` file to get:
+//
+// GOOGLE_MAPS_API_KEY=blah
+// SESSION_SECRET = guess
+// 
+require('dotenv').config();
+
 // Express middleware for parsing body of incoming HTTP requests. It 
 // extracts the body of an incoming stream and exposes it on `req.body`
 var bodyParser = require("body-parser"); 
@@ -20,22 +27,20 @@ var passport = require("passport");
 var path = require("path");
 
 // Express middleware for session management
-var session = require("express-session");
+var session = require('express-session');
+var flash = require('connect-flash');
 
 // Express middleware to serve the favicon ("favorite icon")
-var favicon = require("serve-favicon");
+//var favicon = require("serve-favicon");
 
 var setUpPassport = require("./setuppassport");
-
-var routes = require("./routes");
 
 const { exit } = require("process");
 
 var app = express();
 
-mongoose.connect("mongodb://localhost:27017/iotmap");  // if Mongo running on localhost
-
-//mongoose.connect("mongodb://mongo:27017/iotmap"); // if Mongo running inside container, use
+// connect to the datbase
+mongoose.connect(process.env.MONGODB_URI)
 
 setUpPassport();
 
@@ -54,22 +59,24 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "static")));
 
 app.use(session({
-  secret: "LUp$Dg?,I#i&owP3=9su+OB%`JgL4muLF5YJ~{;t",
-  resave: true,
-  saveUninitialized: true
+    secret: process.env.SESSION_SECRET,
+    resave: true,
+    saveUninitialized: true
 }));
 
+app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
 
+var routes = require("./routes");
 app.use(routes);
 
 // handle `next(err)` calls
-app.use(function(err, req, res, next) {
-  // do nothing for now
-  next();
-});
+//app.use(function (err, req, res, next) {
+    // do nothing for now
+//    next();
+//});
 
 app.listen(app.get("port"), function() {
-  console.log("Server started on port " + app.get("port"));
+    console.log("Server started on port " + app.get("port"));
 });

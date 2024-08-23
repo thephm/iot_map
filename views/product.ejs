@@ -2,7 +2,7 @@
   product = organization.product[ i ];%>
 
     <h3><% if (product.url) { %>
-          <a href="#" onclick="clickedProduct(\'<%= product.slug %>\');">
+          <a href="#" onclick="loadProduct(\'<%= product.slug %>\');">
           <% if (product.name) { %><%= product.name %><% }
              else { %> <%= product.url %> <% } %>
           </a>
@@ -177,7 +177,7 @@
         <% for (y=0; y < product.integration.length; y++) {
           if (y) {%>, <% }
           if (product.integration[ y ].slug) {%>
-            <a href="#" onclick="clickedIntegration(\'<%= product.integration[ y ].slug %>\');">
+            <a href="#" onclick="loadIntegration(\'<%= product.integration[ y ].slug %>\');">
           <%}%>
           <%= product.integration[ y ].name %>
           <%if (product.integration[ y ].slug) {%></a><%}%>

@@ -59,12 +59,15 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 /**
+ * 
  * Converts a string into a slug that can be used as a RESTful URI endpoint.
  * Changes to the string to lowercase and then replaces specific characters
  * like '&' and '/' with '-'
  *
  * @param str value the value to be slug-ged
+ * 
  * @return str a slug that can be used for endpoint
+ * 
  */
 function getSlug(value) {
 
@@ -83,10 +86,13 @@ function getSlug(value) {
 } // getSlug
 
 /**
+ * 
  * Take the basic info values from 'req' and add them to the 'organization'
  *
  * @param req req request object with the Organizaion info from the form
+ * 
  * @param array organization the organization to add the basic information to
+ * 
  */
 function addBasicInfo(req, organization) {
 
@@ -106,13 +112,16 @@ function addBasicInfo(req, organization) {
 } // addBasicInfo
 
 /**
+ * 
  * Take the organization history values from 'req' and set in 'organization'
  *
  * @todo: see if founder exists and use their ObjectID, if not found create a
  * new Person document for them
  *
  * @param req req request object with the Organizaion history info from the form
+ * 
  * @param array organization the organization to add the history information to
+ * 
  */
 function addHistory(req, organization) {
 
@@ -165,10 +174,13 @@ function addHistory(req, organization) {
 } // addHistory
 
 /**
+ * 
  * Take the values from 'req' and add them to the 'organization'.
  *
  * @param req req request object with the service info from the form submitted
+ * 
  * @param array organization the organization to add Social Networks into
+ * 
  */
 function addServices(req, organization) {
 
@@ -210,7 +222,9 @@ function addServices(req, organization) {
  * Take the location values from 'req' and add them to the 'organization'
  *
  * @param req req request object with the location info from the form submitted
+ * 
  * @param array organization the organization to add the location info into
+ * 
  */
 function addLocation(req, organization) {
 
@@ -313,9 +327,11 @@ function addStock(req, organization) {
 } // addStock
 
 /**
+ * 
  * Generate geoJSON for a set of organizations
  *
  * @param array organizations JSON representation of organizations
+ * 
  */
 function getGeoJSON(organizations) {
 
@@ -386,17 +402,15 @@ router.use(function (req, res, next) {
 });
 
 // ------------------------------------------------------------------
-// main
 
 router.get('/', function (req, res) {
     try {
+        logger.debug("index");
         res.render('index');
     } catch (err) {
         res.json({ error: err.message || err.toString() });
     }
 });
-
-
 
 router.get('/organization', function (req, res, next) {
     var re = new RegExp(req.query.term, "g");
@@ -537,7 +551,7 @@ function ensureAuthenticated(req, res, next) {
 }
 
 /** ensure the user is authenticated; then run the request handler if they
- * havenâ€™t been redirected
+ * haven’t been redirected
  */
 router.get("/edit", ensureAuthenticated, function (req, res) {
     res.render("edit");
@@ -560,7 +574,7 @@ router.post("/edit", ensureAuthenticated, function (req, res, next) {
 });
 
 router.get("/organization/:orgSlug", function (req, res, next) {
-    slug = getSlug(req.params.orgSlug);
+    var slug = getSlug(req.params.orgSlug);
     logger.info('/organization/' + slug);
     Organization.findOne({ slug: slug },
         function (err, organization) {
@@ -572,7 +586,7 @@ router.get("/organization/:orgSlug", function (req, res, next) {
 });
 
 router.get("/organization/product/category/:categorySlug", function (req, res, next) {
-    slug = getSlug(req.params.categorySlug);
+    var slug = getSlug(req.params.categorySlug);
 
     Organization.find({ 'product.primary_category_slug': slug },
         function (err, organizations) {
@@ -586,20 +600,24 @@ router.get("/organization/product/category/:categorySlug", function (req, res, n
  * e.g. <site>/organization/product/category/iot-platform/subcategory/software
  */
 router.get("/organization/product/category/:categorySlug/subcategory/:subCategorySlug", function (req, res, next) {
-    categorySlug = getSlug(req.params.categorySlug);
-    subCategorySlug = getSlug(req.params.subCategorySlug);
+    var categorySlug = getSlug(req.params.categorySlug);
+    var subCategorySlug = getSlug(req.params.subCategorySlug);
 
-    Organization.find({ 'product.primary_category_slug': categorySlug, 'product.secondary_category_slug': subCategorySlug },
-        function (err, organizations) {
+    Organization.find({ 'product.primary_category_slug': categorySlug, 'product.secondary_category_slug': subCategorySlug })
+        .sort({ 'name': 1 })
+        .exec()
+        .then(organizations => {
+            if (!organizations || organizations.length === 0) {
+                return res.status(404).send('Organizations not found'); 
+            }
             console.log(organizations);
-            if (err) { return next(err); }
-            if (!organizations) { return next(404); }
             res.render("organizations", { organizations: organizations });
-        }).sort({ 'name': 1 });
+        })
+        .catch (err => next(err));
 });
 
 function displayOrganization(req, res, next) {
-    slug = getSlug(req.body.name);
+    var slug = getSlug(req.body.name);
     //  res.redirect("/oganization/" + slug);
     next();
 }
@@ -623,8 +641,8 @@ router.post("/organization", displayOrganization, function (req, res, next) {
 });
 
 router.get("/product/categories/:categorySlug", function (req, res, next) {
-    slug = getSlug(req.params.categorySlug);
-    found = false;
+    var slug = getSlug(req.params.categorySlug);
+    var found = false;
     for (var i = 0; i < Categories.length; i++) {
         category = Categories[i];
         if (category['slug'] == slug) {
@@ -644,7 +662,7 @@ router.get("/product/categories", function (req, res, next) {
 });
 
 router.get("/product/:productSlug", function (req, res, next) {
-    slug = getSlug(req.params.productSlug);
+    var slug = getSlug(req.params.productSlug);
     Organization.findOne({ 'product.slug': slug },
         function (err, organization) {
             if (err) { return next(err); }
@@ -655,7 +673,7 @@ router.get("/product/:productSlug", function (req, res, next) {
 });
 
 router.get("/standard/:standardSlug", function (req, res, next) {
-    slug = getSlug(req.params.standardSlug);
+    var slug = getSlug(req.params.standardSlug);
     Organization.findOne({ 'product.slug': slug },
         function (err, organization) {
             if (err) { return next(err); }
@@ -669,15 +687,15 @@ router.get("/standard/:standardSlug", function (req, res, next) {
  * product category and sub-category.
  */
 router.get("/map/product/category/:categorySlug/subcategory/:subCategorySlug", function (req, res, next) {
-    categorySlug = getSlug(req.params.categorySlug);
-    subCategorySlug = getSlug(req.params.subCategorySlug);
+    var categorySlug = getSlug(req.params.categorySlug);
+    var subCategorySlug = getSlug(req.params.subCategorySlug);
     console.log('categorySlug=' + categorySlug + ', subCategorySlug=' + subCategorySlug);
 
     Organization.find({ 'product.primary_category_slug': categorySlug, 'product.secondary_category_slug': subCategorySlug },
         function (err, organizations) {
             if (err) { return next(err); }
             if (!organizations) { return next(404); }
-            json = getGeoJSON(organizations);
+            var json = getGeoJSON(organizations);
             res.send(json);
         });
 });
