@@ -90,6 +90,23 @@ npm start
 
 Open http://localhost:3000.
 
+### Render deployment
+
+Set the environment variables above in the Render service settings. Use Atlas
+for `MONGODB_URI`; the local Compose MongoDB hostname is not available on Render.
+Allow the Render service's outbound IP ranges (shown in its dashboard) in Atlas
+Network Access, and confirm the database user has access to `iotmap`.
+
+The server waits for MongoDB before listening. A failed connection logs
+`MongoDB startup failed` and exits instead of serving pages with buffered queries.
+Check authentication, the URI's database name, and Atlas network access when
+diagnosing connection failures.
+
+Automatic deploys require a pushed commit on the service's configured branch
+and auto-deploy enabled in Render. Check build filters and any required CI checks
+if a push does not trigger a build. Use **Manual Deploy > Deploy latest commit**
+to explicitly deploy the latest pushed revision.
+
 ## Data
 
 The repository includes an organizations BSON dump in [dump/](dump/).

@@ -35,14 +35,9 @@ var flash = require('connect-flash');
 
 var setUpPassport = require("./setuppassport");
 
-const { exit } = require("process");
-
 var app = express();
 app.locals.showProductUrls = process.env.SHOW_PRODUCT_URLS === 'true';
 app.locals.socialIcons = require('./config/social-icons.json');
-
-// connect to the datbase
-mongoose.connect(process.env.MONGODB_URI)
 
 setUpPassport();
 
@@ -79,6 +74,22 @@ app.use(routes);
 //    next();
 //});
 
-app.listen(app.get("port"), function() {
-    console.log("Server started on port " + app.get("port"));
-});
+async function start() {
+    try {
+        if (!process.env.MONGODB_URI) {
+            throw new Error('MONGODB_URI is required');
+        }
+        await mongoose.connect(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 30000 });
+        console.log("MongoDB connected");
+        app.listen(app.get("port"), function() {
+            console.log("Server started on port " + app.get("port"));
+        });
+    } catch (error) {
+        var message = String(error.message).replace(/mongodb(?:\+srv)?:\/\/[^\s"'<>]+/gi, '[redacted MongoDB URI]');
+        console.error("MongoDB startup failed (" + error.name + "): " + message);
+        await mongoose.disconnect();
+        process.exitCode = 1;
+    }
+}
+
+start();
