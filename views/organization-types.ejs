@@ -1,0 +1,10 @@
+<% var types = ['hardware', 'software', 'service'].filter(function (type) {
+  return organization.product.some(function (product) { return product[type]; });
+}); %>
+<% if (types.length) { %>
+  <div class="organization-types">
+    <% types.forEach(function (type) { %>
+      <span class="type-pill type-<%= type %>"><%= type %></span>
+    <% }); %>
+  </div>
+<% } %>

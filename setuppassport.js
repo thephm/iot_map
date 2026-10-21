@@ -11,9 +11,9 @@ module.exports = function() {
     // turn the ID into a user object. Once finished, call done with any errors
     // and the user object
     passport.deserializeUser(function(id, done) {
-        User.findById(id, function(err, user) {
-            done(err, user);
-        });
+        User.findById(id).exec().then(function(user) {
+            done(null, user);
+        }).catch(done);
     });
 };
 
@@ -23,8 +23,7 @@ var LocalStrategy = require("passport-local").Strategy;
 passport.use("login", new LocalStrategy(function(username, password, done) {
 
     // use a MongoDB query to get one user
-    User.findOne({ username: username }, function(err, user) {
-    if (err) { return done(err); }
+    User.findOne({ username: username }).exec().then(function(user) {
 
         // if there is no user with the supplied username, return false with an
         // error message. Call the checkPassword method defined in the User model
@@ -44,5 +43,5 @@ passport.use("login", new LocalStrategy(function(username, password, done) {
                 return done(null, false, { message: "Invalid password." });
             }
         });
-    });
+    }).catch(done);
 }));

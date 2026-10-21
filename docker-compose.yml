@@ -1,30 +1,23 @@
-version: "3.7"
-
 services:
 
   iot_map:
     build: .
-#       restart: always
     ports:
-      - "3000:3000"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - "3030:3000"
     environment:
-      # self-hosted Mongo 
-      - MONGODB_URI=mongodb://host.docker.internal:27017/iotmap
+      - MONGODB_URI=${MONGODB_URI:-mongodb://mongo:27017/iotmap}
+      - SHOW_PRODUCT_URLS=${SHOW_PRODUCT_URLS:-false}
       - DEBUG=express:*
+    depends_on:
+      - mongo
 
-#    links:
-#      - mongo
-#    depends_on: 
-#      - mongo
-# 
-# in container
-#   mongo:
-#       container_name: mongo
-#       image: mongo:latest
-#       restart: always
-#   ports:
-#       - "27017:27017"
-#   volumes:
-#       - mongodata:/iotmap-mongo/db
+  mongo:
+    image: mongo:latest
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodata:/data/db
+
+volumes:
+  mongodata:

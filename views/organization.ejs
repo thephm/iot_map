@@ -1,4 +1,6 @@
+<div class="organization-details">
 <h1><%= organization.name %></h1>
+<%- include('organization-types'); -%>
 <% if (typeof(organization.location) != "undefined") { %>
   <% if (typeof(organization.location[0]) != "undefined") { %>
     <input type="hidden" id="<%= organization.slug %>-lat" value=<%= organization.location[0].address.lat %>>
@@ -48,13 +50,17 @@
   <p><%= organization.description %></p>
 <% } %>
 
-<p>
+<p class="social-links">
 <% for (i=0; i < organization.social_network.length; i++) {
   socialNetwork = organization.social_network[ i ];
+  if (!socialNetwork.url || !socialNetwork.url.trim()) { continue; }
+  var iconPath = socialIcons[socialNetwork.service.trim().toLowerCase()];
     url = organization.checkUrl(socialNetwork.url);
-    if (url) { %><a href="<%= url %>" target="<%= organization.slug %>"><% } %>
-    <%= socialNetwork.service %>
-    <% if (url) { %></a><% } %>
+    %><a href="<%= url %>" target="<%= organization.slug %>" aria-label="<%= socialNetwork.service %>" title="<%= socialNetwork.service %>">
+    <% if (iconPath) { %>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="<%= iconPath %>"></path></svg>
+    <% } else { %><%= socialNetwork.service %><% } %>
+    </a>
 <% } %>
 </p>
 
@@ -67,4 +73,6 @@ if (email) {%><p>email: <a href="mailto:<%= email %>"><%= email %></a></p><% } %
 <% address = organization.getFirstLocation();
 if (address) { %><p>Address: <%= address %></p><% } %>
 
-<%- include('product'); -%>
+</div>
+
+<div class="org-products"><%- include('product'); -%></div>

@@ -1,0 +1,22 @@
+.navbar .navbar-header {
+    display: flex;
+    align-items: center;
+}
+.navbar .navbar-header::before,
+.navbar .navbar-header::after {
+    content: none;
+}
+.navbar .navbar-toggle {
+    order: 1;
+    margin-left: auto;
+}
+.navbar.navbar-default .site-wordmark {
+    color: #337ab7;
+    font-size: 20px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+.navbar.navbar-default .site-wordmark:hover,
+.navbar.navbar-default .site-wordmark:focus {
+    color: #23527c;
+}

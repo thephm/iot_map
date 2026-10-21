@@ -1,0 +1,103 @@
+html[data-theme="dark"] {
+    color-scheme: dark;
+}
+#nav-search-form {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 0;
+    border: 0;
+    background: transparent;
+    color: #555;
+    font-size: 13px;
+}
+.theme-track {
+    width: 30px;
+    height: 18px;
+    padding: 2px;
+    border-radius: 12px;
+    background: #aaa;
+}
+.theme-track::before {
+    content: "";
+    display: block;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: white;
+}
+.theme-toggle[aria-checked="true"] .theme-track {
+    background: #337ab7;
+}
+.theme-toggle[aria-checked="true"] .theme-track::before {
+    transform: translateX(12px);
+}
+.theme-toggle:focus-visible {
+    outline: 2px solid #337ab7;
+    outline-offset: 3px;
+}
+html[data-theme="dark"] body {
+    background: #141b25;
+    color: #e2e8f0;
+}
+html[data-theme="dark"] a,
+html[data-theme="dark"] .navbar.navbar-default .site-wordmark {
+    color: #8ac4ff;
+}
+html[data-theme="dark"] .navbar-default,
+html[data-theme="dark"] .panel,
+html[data-theme="dark"] .organization-details,
+html[data-theme="dark"] .product-box,
+html[data-theme="dark"] .form-control,
+html[data-theme="dark"] .list-group-item,
+html[data-theme="dark"] .well {
+    background: #1e2938;
+    color: #e2e8f0;
+    border-color: #465367;
+}
+html[data-theme="dark"] .panel-default > .panel-heading {
+    background: #263448;
+    color: #e2e8f0;
+    border-color: #465367;
+}
+html[data-theme="dark"] .navbar-default .navbar-brand,
+html[data-theme="dark"] .theme-toggle {
+    color: #cbd5e1;
+}
+html[data-theme="dark"] .form-control::placeholder,
+html[data-theme="dark"] #category-panel .category-count {
+    color: #aebbd0;
+}
+html[data-theme="dark"] #category-panel label:hover,
+html[data-theme="dark"] .social-links a:hover,
+html[data-theme="dark"] .social-links a:focus-visible {
+    background: #34465e;
+}
+html[data-theme="dark"] #category-panel input:checked + label {
+    background: #337ab7;
+    color: white;
+}
+html[data-theme="dark"] #category-panel input:checked + label .category-count {
+    color: white;
+}
+html[data-theme="dark"] #category-panel input:focus-visible + label {
+    outline-color: #cbd5e1;
+}
+html[data-theme="dark"] .total-companies { color: #c5a4f0; }
+html[data-theme="dark"] .total-people { color: #84c7ff; }
+html[data-theme="dark"] .total-products { color: #8bddaa; }
+html[data-theme="dark"] .panel.on { border-color: #8bddaa; }
+html[data-theme="dark"] .panel.hover { border-color: #84c7ff; }
+html[data-theme="dark"] .gm-style-iw,
+html[data-theme="dark"] .gm-style-iw-c {
+    color: #222;
+}
+@media (min-width: 768px) and (max-width: 1100px) {
+    #nav-search-form { gap: 8px; }
+    #nav-search-form #nav-search { width: 120px; }
+}

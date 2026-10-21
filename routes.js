@@ -403,17 +403,22 @@ router.use(function (req, res, next) {
 
 // ------------------------------------------------------------------
 
-router.get('/', function (req, res) {
-    try {
-        logger.debug("index");
-        res.render('index');
-    } catch (err) {
-        res.json({ error: err.message || err.toString() });
-    }
+router.get('/', function (req, res, next) {
+    Promise.all([
+        Organization.countDocuments({}),
+        Person.countDocuments({}),
+        Organization.aggregate([
+            { $group: { _id: null, count: { $sum: { $size: { $ifNull: ['$product', []] } } } } }
+        ])
+    ]).then(function ([companies, people, products]) {
+        res.render('index', {
+            totals: { companies: companies, people: people, products: products.length ? products[0].count : 0 }
+        });
+    }).catch(next);
 });
 
 router.get('/organization', function (req, res, next) {
-    var re = new RegExp(req.query.term, "g");
+    var re = String(req.query.term || "");
 
     Organization.find({
         $or:
@@ -421,10 +426,10 @@ router.get('/organization', function (req, res, next) {
             { 'product.slug': { $regex: re, $options: 'i' } },
             { 'product.description': { $regex: re, $options: 'i' } }
             ]
-    },
-        function (err, organizations) {
-            if (err) { return next(err); }
-            if (!organizations) { return next(404); }
+    })
+        .sort({ 'name': 1 })
+        .exec()
+        .then(function (organizations) {
             if (organizations.length > 1) {
                 res.render("organizations", { organizations: organizations });
             } else if (organizations.length == 1) {
@@ -432,12 +437,13 @@ router.get('/organization', function (req, res, next) {
             } else {
                 res.render("nonefound");
             }
-        }).sort({ 'name': 1 });
+        })
+        .catch(next);
 
 });
 
 router.get("/map/organization", function (req, res, next) {
-    var re = new RegExp(req.query.term, "g");
+    var re = String(req.query.term || "");
 
     Organization.find({
         $or:
@@ -445,23 +451,22 @@ router.get("/map/organization", function (req, res, next) {
             { 'product.slug': { $regex: re, $options: 'i' } },
             { 'product.description': { $regex: re, $options: 'i' } }
             ]
-    },
-        function (err, organizations) {
-            if (err) { return next(err); }
-            if (!organizations) { return next(404); }
-            json = getGeoJSON(organizations);
-            res.send(json);
-        });
+    })
+        .exec()
+        .then(function (organizations) {
+            res.send(getGeoJSON(organizations));
+        })
+        .catch(next);
 });
 
-router.get('/organizations', function (req, res) {
+router.get('/organizations', function (req, res, next) {
 
-    Organization.find("{ 'location.address.country': 'Canada' }",
-        function (err, organizations) {
-            if (err) { return next(err); }
-            if (!organizations) { return next(404); }
+    Organization.find({ 'location.address.country': 'Canada' })
+        .exec()
+        .then(function (organizations) {
             res.render("organizations", { organizations: organizations });
-        });
+        })
+        .catch(next);
 
 });
 
@@ -469,10 +474,11 @@ router.get("/users", function (req, res, next) {
     // query the "users" collection, returning the newest users first
     User.find()
         .sort({ createdAt: "descending" })    // sort descending by createdAt
-        .exec(function (err, users) {         // runs the query
-            if (err) { return next(err); }
+        .exec()
+        .then(function (users) {
             res.render("users", { users: users });
-        });
+        })
+        .catch(next);
 });
 
 router.get("/signup", function (req, res) {
@@ -490,9 +496,7 @@ router.post("/signup", function (req, res, next) {
     var username = req.body.username;
     var password = req.body.password;
 
-    User.findOne({ username: username }, function (err, user) {
-
-        if (err) { return next(err); }
+    User.findOne({ username: username }).exec().then(function (user) {
 
         // if found a user, bail out because that username already exists
         if (user) {
@@ -509,9 +513,9 @@ router.post("/signup", function (req, res, next) {
         });
 
         // save the new user to the DB and continue to the next request handler
-        newUser.save(next);
+        return newUser.save().then(function () { next(); });
 
-    });
+    }).catch(next);
 }, passport.authenticate("login", {   // authenticate the user
     successRedirect: "/",
     failureRedirect: "/signup",
@@ -519,11 +523,10 @@ router.post("/signup", function (req, res, next) {
 }));
 
 router.get("/users/:username", function (req, res, next) {
-    User.findOne({ username: req.params.username }, function (err, user) {
-        if (err) { return next(err); }
+    User.findOne({ username: req.params.username }).exec().then(function (user) {
         if (!user) { return next(404); }
         res.render("profile", { user: user });
-    });
+    }).catch(next);
 });
 
 router.get("/login", function (req, res) {
@@ -551,7 +554,7 @@ function ensureAuthenticated(req, res, next) {
 }
 
 /** ensure the user is authenticated; then run the request handler if they
- * haven’t been redirected
+ * havenï¿½t been redirected
  */
 router.get("/edit", ensureAuthenticated, function (req, res) {
     res.render("edit");
@@ -563,37 +566,32 @@ router.get("/edit", ensureAuthenticated, function (req, res) {
 router.post("/edit", ensureAuthenticated, function (req, res, next) {
     req.user.displayName = req.body.displayname;
     req.user.bio = req.body.bio;
-    req.user.save(function (err) {
-        if (err) {
-            next(err);
-            return;
-        }
+    req.user.save().then(function () {
         req.flash("info", "User updated!");
         res.redirect("/edit");
-    });
+    }).catch(next);
 });
 
 router.get("/organization/:orgSlug", function (req, res, next) {
     var slug = getSlug(req.params.orgSlug);
     logger.info('/organization/' + slug);
-    Organization.findOne({ slug: slug },
-        function (err, organization) {
-            if (err) { return next(err); }
-            if (!organization) { return next(404); }
-            console.log(organization.date_added);
-            res.render("organization", { organization: organization });
-        });
+    Organization.findOne({ slug: slug }).exec().then(function (organization) {
+        if (!organization) { return next(404); }
+        console.log(organization.date_added);
+        res.render("organization", { organization: organization });
+    }).catch(next);
 });
 
 router.get("/organization/product/category/:categorySlug", function (req, res, next) {
     var slug = getSlug(req.params.categorySlug);
 
-    Organization.find({ 'product.primary_category_slug': slug },
-        function (err, organizations) {
-            if (err) { return next(err); }
-            if (!organizations) { return next(404); }
+    Organization.find({ 'product.primary_category_slug': slug })
+        .sort({ 'name': 1 })
+        .exec()
+        .then(function (organizations) {
             res.render("organizations", { organizations: organizations });
-        }).sort({ 'name': 1 });
+        })
+        .catch(next);
 });
 
 /*
@@ -603,7 +601,7 @@ router.get("/organization/product/category/:categorySlug/subcategory/:subCategor
     var categorySlug = getSlug(req.params.categorySlug);
     var subCategorySlug = getSlug(req.params.subCategorySlug);
 
-    Organization.find({ 'product.primary_category_slug': categorySlug, 'product.secondary_category_slug': subCategorySlug })
+    Organization.find({ product: { $elemMatch: { primary_category_slug: categorySlug, secondary_category_slug: subCategorySlug } } })
         .sort({ 'name': 1 })
         .exec()
         .then(organizations => {
@@ -632,54 +630,72 @@ router.post("/organization", displayOrganization, function (req, res, next) {
     addHistory(req, newOrganization);
     addStock(req, newOrganization);
 
-    newOrganization.save(function (err) {
-        if (err) { next(new Error("Save failed")); }
+    newOrganization.save().then(function () {
         req.flash("organization", "Organization updated!");
-        res.redirect("/oganization/" + slug);
-        res.redirect("google.ca");
-    });
+        res.redirect("/organization/" + newOrganization.slug);
+    }).catch(function () { next(new Error("Save failed")); });
 });
+
+async function getCategoriesWithCounts() {
+    var rows = await Organization.aggregate([
+        { $unwind: '$product' },
+        { $group: {
+            _id: { category: '$product.primary_category_slug', organization: '$_id' },
+            subcategories: { $addToSet: '$product.secondary_category_slug' }
+        } }
+    ]);
+    return Categories.map(function (category) {
+        var organizations = rows.filter(function (row) {
+            return row._id.category === category.slug;
+        });
+        return {
+            ...category,
+            count: organizations.length,
+            subcategories: category.subcategories.map(function (subcategory) {
+                return {
+                    ...subcategory,
+                    count: organizations.filter(function (row) {
+                        return row.subcategories.includes(subcategory.slug);
+                    }).length
+                };
+            })
+        };
+    });
+}
 
 router.get("/product/categories/:categorySlug", function (req, res, next) {
     var slug = getSlug(req.params.categorySlug);
-    var found = false;
-    for (var i = 0; i < Categories.length; i++) {
-        category = Categories[i];
-        if (category['slug'] == slug) {
-            found = true;
-            break;
+    getCategoriesWithCounts().then(function (categories) {
+        var category = categories.find(function (item) { return item.slug === slug; });
+        if (category) {
+            res.send(category.subcategories);
+        } else {
+            res.send({ "error": "no categories found" });
         }
-    }
-    if (found) {
-        res.send(category['subcategories']);
-    } else {
-        res.send({ "error": "no categories found" });
-    }
+    }).catch(next);
 });
 
 router.get("/product/categories", function (req, res, next) {
-    res.send(Categories);
+    getCategoriesWithCounts().then(function (categories) {
+        res.send(categories);
+    }).catch(next);
 });
 
 router.get("/product/:productSlug", function (req, res, next) {
     var slug = getSlug(req.params.productSlug);
-    Organization.findOne({ 'product.slug': slug },
-        function (err, organization) {
-            if (err) { return next(err); }
-            if (!organization) { return next(404); }
-            console.log(organization.name);
-            res.render("product", { organization: organization });
-        });
+    Organization.findOne({ 'product.slug': slug }).exec().then(function (organization) {
+        if (!organization) { return next(404); }
+        console.log(organization.name);
+        res.render("product", { organization: organization });
+    }).catch(next);
 });
 
 router.get("/standard/:standardSlug", function (req, res, next) {
     var slug = getSlug(req.params.standardSlug);
-    Organization.findOne({ 'product.slug': slug },
-        function (err, organization) {
-            if (err) { return next(err); }
-            if (!organization) { return next(404); }
-            res.render("organization", { organization: organization });
-        });
+    Organization.findOne({ 'product.slug': slug }).exec().then(function (organization) {
+        if (!organization) { return next(404); }
+        res.render("organization", { organization: organization });
+    }).catch(next);
 });
 
 /*
@@ -691,17 +707,18 @@ router.get("/map/product/category/:categorySlug/subcategory/:subCategorySlug", f
     var subCategorySlug = getSlug(req.params.subCategorySlug);
     console.log('categorySlug=' + categorySlug + ', subCategorySlug=' + subCategorySlug);
 
-    Organization.find({ 'product.primary_category_slug': categorySlug, 'product.secondary_category_slug': subCategorySlug },
-        function (err, organizations) {
-            if (err) { return next(err); }
-            if (!organizations) { return next(404); }
-            var json = getGeoJSON(organizations);
-            res.send(json);
-        });
+    Organization.find({
+        product: { $elemMatch: { primary_category_slug: categorySlug, secondary_category_slug: subCategorySlug } }
+    })
+        .exec()
+        .then(function (organizations) {
+            res.send(getGeoJSON(organizations));
+        })
+        .catch(next);
 });
 
 // catch-all
-router.get('*', function (req, res) {
+router.get(/.*/, function (req, res) {
     res.redirect("/");
 });
 

@@ -20,6 +20,7 @@
       </a>
     </div>
     <div class="panel-body">
+    <%- include('organization-types', { organization: organization }); -%>
     <% organization.product.forEach(function(product) { %>
     - <small><a href="#" onClick="loadProduct('<%= product.slug %>');"><%= product.name %></a></small><br>
     <% }) %>

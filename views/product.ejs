@@ -1,27 +1,24 @@
 <% for (i=0; i < organization.product.length; i++) {
   product = organization.product[ i ];%>
+  <div class="product-box">
 
-    <h3><% if (product.url) { %>
-          <a href="#" onclick="loadProduct(\'<%= product.slug %>\');">
-          <% if (product.name) { %><%= product.name %><% }
-             else { %> <%= product.url %> <% } %>
-          </a>
-      <% } else if (product.name) { %>
-        <%= product.name %>
-    <% } %></h3>
+    <h3><%= product.name || (showProductUrls && product.url) || 'Unnamed product' %>
+    <% if (product.hardware || product.software || product.service) { %>
+      <span class="product-types">
+        <% if (product.hardware) { %><span class="type-pill type-hardware">hardware</span><%}%>
+        <% if (product.software) { %><span class="type-pill type-software">software</span><%}%>
+        <% if (product.service) { %><span class="type-pill type-service">service</span><%}%>
+      </span>
+    <%} %></h3>
 
     <p><%= product.primary_category %>
     <% if (product.secondary_category) { %>/ <%= product.secondary_category %><% } %>
     </p>
-    <p><i><%= product.description %></i></p>
+    <p class="product-description"><%= product.description %></p>
 
-    <% if (product.hardware || product.software || product.service) { %>
-      <p>Type:
-        <% if (product.hardware) { %> hardware<%}%>
-        <% if (product.software) { %> software<%}%>
-        <% if (product.service) { %> service<%}%>
-      </p>
-    <%} %>
+    <% if (showProductUrls && product.url) { %>
+      <p><a href="<%= organization.checkUrl(product.url) %>" target="_blank" rel="noopener noreferrer"><%= organization.checkUrl(product.url) %></a></p>
+    <% } %>
 
     <% if (product.open_source) { %>
       <p>Open Source
@@ -164,7 +161,7 @@
         <% for (s=0; s < standards.length; s++) {
           if (s) {%>, <% }
           if (product.standard[ s ].slug) {%>
-            <a href="#" onclick="clickedStandard(\'<%= product.standard[ s ].slug %>\');">
+            <a href="#" onclick="clickedStandard('<%= product.standard[ s ].slug %>');">
           <%}%>
           <%= standards[ s ].name %>
           <%if (product.standard[ s ].slug) {%></a><%}%>
@@ -177,7 +174,7 @@
         <% for (y=0; y < product.integration.length; y++) {
           if (y) {%>, <% }
           if (product.integration[ y ].slug) {%>
-            <a href="#" onclick="loadIntegration(\'<%= product.integration[ y ].slug %>\');">
+            <a href="#" onclick="loadIntegration('<%= product.integration[ y ].slug %>');">
           <%}%>
           <%= product.integration[ y ].name %>
           <%if (product.integration[ y ].slug) {%></a><%}%>
@@ -185,4 +182,5 @@
       </p>
     <%} %>
 
+  </div>
 <% } %>

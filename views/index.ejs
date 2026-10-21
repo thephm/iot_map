@@ -20,6 +20,178 @@ label {
     border-color:blue;
 }
 
+.organization-panel .panel-heading a {
+    font-weight: bold;
+    font-size: 18px;
+    overflow-wrap: anywhere;
+}
+.organization-panel .panel-heading {
+    padding: 8px 15px;
+}
+.organization-panel .panel-body .organization-types {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 0 0 10px;
+}
+.organization-panel .organization-types .type-pill {
+    margin: 0;
+}
+
+.type-pill {
+    display: inline-block;
+    padding: 3px 12px;
+    margin-right: 6px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+}
+.type-hardware { background-color: #e2d5f5; }
+.type-software { background-color: #c8e6ff; }
+.type-service  { background-color: #d4f5d0; }
+.organization-types {
+    margin: 6px 0 10px;
+}
+.social-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.social-links a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    min-height: 32px;
+    border-radius: 4px;
+}
+.social-links a:hover,
+.social-links a:focus-visible {
+    background-color: #eee;
+}
+
+#nav-search {
+    width: 320px;
+}
+.nav-totals {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    padding: 4px 16px;
+}
+.nav-total {
+    text-align: center;
+}
+.nav-total strong {
+    display: block;
+    font-size: 28px;
+    line-height: 30px;
+}
+.nav-total span {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.total-companies { color: #7254a3; }
+.total-people { color: #2177ad; }
+.total-products { color: #27824a; }
+@media (min-width: 768px) {
+    .navbar .navbar-collapse.collapse {
+        display: flex !important;
+        align-items: center;
+        min-height: 58px;
+    }
+    .nav-totals {
+        position: absolute;
+        /* Category width plus half the map column width. */
+        left: calc(13.3333% + 61.6667% / 2);
+        top: 50%;
+        transform: translate(-50%, -50%);
+    }
+    #nav-search-form { margin-left: auto; }
+}
+@media (min-width: 768px) and (max-width: 1100px) {
+    #nav-search { width: 180px; }
+    .nav-totals { gap: 16px; }
+}
+
+/* left column 20% narrower than col-sm-2; map column takes the difference */
+@media (min-width: 768px) {
+    #category-panel { width: 13.3333%; }
+    #map-column     { width: 61.6667%; }
+}
+#category-panel .panel {
+    padding: 6px;
+    margin-top: 4px;
+}
+#category-panel .iradio {
+    position: relative;
+}
+#category-panel input[type="radio"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+}
+#category-panel label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    margin: 0;
+    padding: 4px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+#category-panel label:hover {
+    background-color: #eee;
+}
+#category-panel input:checked + label {
+    background-color: #337ab7;
+    color: #fff;
+}
+#category-panel .category-count {
+    color: #777;
+}
+#category-panel input:checked + label .category-count {
+    color: #fff;
+}
+#category-panel input:focus-visible + label {
+    outline: 2px solid #222;
+    outline-offset: 1px;
+}
+#category-panel > b {
+    display: block;
+    margin-top: 6px;
+}
+
+.product-box,
+.organization-details {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 0 15px 5px;
+    margin-bottom: 15px;
+}
+.product-box h3 .product-types {
+    margin-left: 10px;
+    vertical-align: middle;
+}
+.product-description {
+    font-size: 18px;
+}
+.product-description::first-letter {
+    text-transform: uppercase;
+}
+
+/* organizations panel fills the window height and scrolls on its own */
+#organizations {
+    position: sticky;
+    top: 10px;
+    max-height: calc(100vh - 20px);
+    overflow-y: auto;
+}
+
 /* set the map height explicitly to set size of div element that contains map
 */
 #map {
@@ -53,6 +225,21 @@ window.onload = function() {
             center: new google.maps.LatLng(33.589886, 7.603869),
             zoom: 2,
 		});
+        var darkMapStyles = [
+            { elementType: 'geometry', stylers: [{ color: '#243246' }] },
+            { elementType: 'labels.text.stroke', stylers: [{ color: '#243246' }] },
+            { elementType: 'labels.text.fill', stylers: [{ color: '#c1ccdc' }] },
+            { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#142132' }] },
+            { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#43536b' }] },
+            { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#29483e' }] }
+        ];
+        function updateMapTheme() {
+            map.setOptions({
+                styles: document.documentElement.dataset.theme === 'dark' ? darkMapStyles : null
+            });
+        }
+        updateMapTheme();
+        document.addEventListener('themechange', updateMapTheme);
 				
         const infoWindow = new google.maps.InfoWindow({
             content:"",
@@ -63,6 +250,7 @@ window.onload = function() {
 
 	    map.data.addListener('click', function(event) {
 	        id = event.feature.getId();
+	        saveListView();
 	        displayInfoWindow(event);
 	        clickedPin(id);
 	    });		
@@ -111,11 +299,10 @@ window.onload = function() {
                 cache: false,
                 error: function() { console.log('could not load the map data'); },
                 success: function(data) {
-                    features = map.data.addGeoJson(data);
                     infoWindow.close();
                     removeFeatures();
+                    features = map.data.addGeoJson(data) || [];
                     resetZoom();
-                    addFeatures(features);
                     logFeatures(features);
                 }
             });
@@ -131,7 +318,7 @@ window.onload = function() {
         *
         */
         function loadJSONbyTerm(term) {
-            url = 'map/organization?term=' + term;
+            url = 'map/organization?term=' + encodeURIComponent(term);
 
             $.ajax({
                 type: 'GET',
@@ -140,28 +327,15 @@ window.onload = function() {
                 cache: false,
                 error: function() { console.log('could not load the map data'); },
                 success: function(data) {
-                    features = map.data.addGeoJson(data);
                     infoWindow.close();
                     removeFeatures();
+                    features = map.data.addGeoJson(data) || [];
                     resetZoom();
-                    addFeatures(features);
                     logFeatures(features);
                     zoomToOrganization(term);
                 }
             });
         }
-
-        /**
-        * Add the features to 'features' array
-        *
-        * @param array features array of Google Map Feature objects
-        * @return null
-        */
-        function addFeatures(features) {
-            features.forEach(function(feature) {
-                map.features.push(feature);
-            });
-        } 
 
         /**
         * Write the properties of a Feature to the console
@@ -197,7 +371,7 @@ window.onload = function() {
         * @return null
         */
         function removeFeatures() {
-            $.each(map.features, function (index, feature) {
+            map.data.forEach(function (feature) {
                 map.data.remove(feature);
             });
         }
@@ -252,35 +426,12 @@ window.onload = function() {
                         "secondary_category_slug")
                     );
 
-                    // click the radio buttons for the default category and sub-category
-                    //$('#primary_category').find('[ value="' + categorySlug + '" ]').iCheck('check');
-                
 				    query = '[ value="' + categorySlug + '" ]';
-                    $('#primary_category').find(query).each(function() {
-                        return new Promise((resolve, reject) => {
-                            try {
-                                $this.iCheck('check');
-                                resolve();
-                            } catch (err) {
-                                reject(err);
-                            }
-                        });
-                    });
+                    $('#primary_category').find(query).prop('checked', true);
 				  
-                    // $('#secondary_category').find('[ value="' + subCategorySlug + '" ]').iCheck('check');
 					query = '[ value="' + subCategorySlug + '" ]';
-                    $('#secondary_category').find(query).each(function() {
-                        return new Promise((resolve, reject) => {
-                            try {
-                                $this.iCheck('check');
-                                resolve();
-                            } catch (err) {
-                                reject(err);
-                            }
-                        });
-                    });                   
+                    $('#secondary_category').find(query).prop('checked', true);
 
-                  styleButtons();
                   setupCategoryClick();
                   setupSubCategoryClick();
 
@@ -290,20 +441,13 @@ window.onload = function() {
         }
 		
         function clickedPin(id) {
-            var feature = map.data.getFeatureById(id);
-            var name = feature.getProperty('name');
-
+            saveListView();
             loadOrganization(id);
-            map.data.overrideStyle(feature, {icon: "http://maps.google.com/mapfiles/ms/icons/green-dot.png"});
-        }
 
-        // style the radio buttons using iCheck
-        function styleButtons() {
-            $('input').iCheck({
-                checkboxClass: 'icheckbox_square-purple',
-                radioClass: 'iradio_square-purple',
-                increaseArea: '20%' // optional
-            });
+            var feature = map.data.getFeatureById(id);
+            if (feature) {
+                map.data.overrideStyle(feature, {icon: "https://maps.google.com/mapfiles/ms/icons/green-dot.png"});
+            }
         }
 
         // search
@@ -316,14 +460,14 @@ window.onload = function() {
         // setup the action when user clicks a category, so the sub-categories
         // are changed
         function setupCategoryClick() {
-            $('[name="primary_category_slug"]').on('ifChecked', function(event) {
+            $('[name="primary_category_slug"]').on('change', function(event) {
                 categoryClicked(event);
             });
         }
 
         // setup the action when user clicks a subCategory, so the orgs are loaded
         function setupSubCategoryClick() {
-            $('[name="secondary_category_slug"]').on('ifChecked', function(event) {
+            $('[name="secondary_category_slug"]').on('change', function(event) {
                 subCategoryClicked(event);
             });
         }
@@ -352,13 +496,11 @@ window.onload = function() {
                             getCategoriesHTML(categories[ index ]['subcategories'],
                             "secondary_category_slug")
                         );
-                        styleButtons();
-                        setupCategoryClick();
                         setupSubCategoryClick();
                         subCategory = getDefaultSubCategory(categorySlug);
                         if (subCategory) {
                             $('#secondary_category').
-                            find('[value="' + subCategory + '"]').iCheck('check');
+                            find('[value="' + subCategory + '"]').prop('checked', true).trigger('change');
                         }
 
                         // update the list of organizations
@@ -389,6 +531,7 @@ window.onload = function() {
             latitude = Number($('#' + slug + '-lat').val());
             longitude = Number($('#' + slug + '-lng').val());
             if (latitude && longitude) {
+                saveListView();
                 var position = { lat: latitude, lng: longitude };
                 map.setCenter(position);
                 map.setZoom(10);
@@ -415,9 +558,82 @@ window.onload = function() {
                 cache: false,
                 error: function() { console.log('could not load the organizations'); },
                 success: function(data) {
-                    $('#organizations').html(data);
+                    showOrganizations(data);
                 }
             });
+        }
+
+        /**
+         * Show HTML in the organizations panel, moving any products it contains
+         * into the Products section under the map
+         *
+         * @param str html rendered organization(s) HTML
+         * @return null
+         */
+        var lastListHtml = null;
+        var lastListScroll = 0;
+        var showingList = false;
+        var listView = null;
+
+        // remember the map view the results list was showing, before the
+        // first company in it is selected
+        function saveListView() {
+            if (showingList && listView === null) {
+                listView = { center: map.getCenter(), zoom: map.getZoom() };
+            }
+        }
+
+        function showOrganizations(html) {
+            var $panel = $('#organizations');
+            var isList = $('<div>').html(html).find('.organization-panel').length > 0;
+
+            if (isList) {
+                lastListHtml = html;
+                listView = null;
+            } else if (showingList) {
+                lastListScroll = $panel.scrollTop();
+            }
+            showingList = isList;
+
+            $panel.html(html);
+            $panel.scrollTop(0);
+
+            if (!isList && lastListHtml !== null) {
+                $panel.prepend('<p><a href="#" id="back-to-results">&larr; Back</a></p>');
+            }
+
+            var products = $('#organizations .org-products').detach();
+            if (products.length && $.trim(products.html())) {
+                $('#products-list').empty().append(products);
+                $('#products').show();
+            } else {
+                $('#products-list').empty();
+                $('#products').hide();
+            }
+        }
+
+        $(document).on('click', '#back-to-results', function (event) {
+            event.preventDefault();
+            if (lastListHtml === null) { return; }
+            infoWindow.close();
+            map.data.revertStyle();
+            if (listView) {
+                map.setCenter(listView.center);
+                map.setZoom(listView.zoom);
+            }
+            showOrganizations(lastListHtml);
+            $('#organizations').scrollTop(lastListScroll);
+        });
+
+        /**
+         * Show a product's HTML in the Products section under the map
+         *
+         * @param str html rendered product HTML
+         * @return null
+         */
+        function showProducts(html) {
+            $('#products-list').html(html);
+            $('#products').show();
         }
 
         /**
@@ -427,14 +643,14 @@ window.onload = function() {
          * @return null
          */
         function searchOrganizations(term) {
-            url = '/organization?term=' + term;
+            url = '/organization?term=' + encodeURIComponent(term);
             $.ajax({
                 type: 'GET',
                 url: url,
                 cache: false,
                 error: function() { console.log('could not load the organizations'); },
                 success: function(data) {
-                    $('#organizations').html(data);
+                    showOrganizations(data);
                 }
             });
         }
@@ -453,7 +669,7 @@ window.onload = function() {
                 cache: false,
                 error: function() { console.log('could not load the organization'); },
                 success: function(data) {
-                    $('#organizations').html(data);
+                    showOrganizations(data);
                 }
             });
         }
@@ -472,7 +688,7 @@ window.onload = function() {
                 cache: false,
                 error: function() { console.log('could not load the organization'); },
                 success: function(data) {
-                    $('#organizations').html(data);
+                    showProducts(data);
                 }
             });
         }
@@ -491,7 +707,25 @@ window.onload = function() {
                 cache: false,
                 error: function() { console.log('could not load the organization'); },
                 success: function(data) {
-                    $('#organizations').html(data);
+                    showProducts(data);
+                }
+            });
+        }
+
+        /**
+         * Load the organization behind a standard
+         *
+         * @param str slug short RESTful tag for the standard
+         * @return null
+         */
+        function clickedStandard(slug) {
+            $.ajax({
+                type: 'GET',
+                url: '/standard/' + slug,
+                cache: false,
+                error: function() { console.log('could not load the standard'); },
+                success: function(data) {
+                    showOrganizations(data);
                 }
             });
         }
@@ -512,15 +746,39 @@ window.onload = function() {
                 html += '<div class="iradio">';
                 html += '<input type="radio" name="' + field + '" id="' + field + '[' + i + ']" ';
                 html += 'value="' + theCategories[i]['slug'] + '">';
-                html += ' <label for="' + field + '[' + i + ']">' + name + '</label>';
+                html += ' <label for="' + field + '[' + i + ']"><span>' + name + '</span>';
+                html += '<span class="category-count">' + theCategories[i].count + '</span></label>';
                 html += '</div>';
             }
 
             return html;
         }
 		
-        loadCategories();
+        // expose functions used by inline onclick/onchange handlers in the views
+        window.search = search;
+        window.clickedPin = clickedPin;
+        window.zoomToOrganization = zoomToOrganization;
+        window.loadProduct = loadProduct;
+        window.loadIntegration = loadIntegration;
+        window.clickedStandard = clickedStandard;
+
+        function runNavSearch() {
+            var input = document.getElementById('nav-search');
+            if (input.value.trim()) search(input);
+        }
+        $('#nav-search-form').on('submit', function(e) {
+            e.preventDefault();
+            runNavSearch();
+        });
+        $('#nav-search').on('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                runNavSearch();
+            }
+        });
+
         defaultCategory = 'iot-platform';
+        loadCategories();
 	    loadJSON('iot-platform', 'software');
     }
 
@@ -529,14 +787,13 @@ window.onload = function() {
 </script>
 
 <%- include('header'); -%>
-	<%- include('navbar'); -%>
+	<%- include('navbar', { showSearch: true }); -%>
 
 <div class="container-fluid grid">
 
 <div class="row">
         
   <div class="col-sm-2" id="category-panel">
-    <input name="search" type="text" class="form-control" placeholder="search term" required autofocus onChange="search(this);">
     <b>Category</b>
     <div class="panel panel-default" id="primary_category">
     </div> <!-- panel -->
@@ -546,12 +803,16 @@ window.onload = function() {
     </div> <!-- panel -->
   </div>
 
-  <!--
-  <div class="col-sm-7" id="mapDiv"></div>
-  -->
-  <div id="mapDiv" style="width: 50%; height: 400px;"></div>
-	
-  <div class="col-sm-3" id="organizations" class="pre-scrollable">
+  <div class="col-sm-7" id="map-column">
+    <div id="mapDiv" style="width: 100%; height: 400px;"></div>
+
+    <div id="products" style="display: none;">
+      <h2>Products</h2>
+      <div id="products-list"></div>
+    </div>
+  </div>
+
+  <div class="col-sm-3" id="organizations">
   </div>
 
 </div> <!-- row -->

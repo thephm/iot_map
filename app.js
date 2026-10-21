@@ -38,6 +38,8 @@ var setUpPassport = require("./setuppassport");
 const { exit } = require("process");
 
 var app = express();
+app.locals.showProductUrls = process.env.SHOW_PRODUCT_URLS === 'true';
+app.locals.socialIcons = require('./config/social-icons.json');
 
 // connect to the datbase
 mongoose.connect(process.env.MONGODB_URI)

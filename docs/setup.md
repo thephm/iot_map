@@ -11,12 +11,34 @@ docker-compose up
 
 2. Find the backup / mongo export
 
-3. Import the data
+3. Import the data (put the `.bson` / `.metadata.json` files in `dump/`)
 
 ```shell
-cd c:\data
-mongorestore --host dump\iotmap
+docker compose cp dump/. mongo:/tmp/iotmap
+docker compose exec mongo mongorestore --drop --db iotmap /tmp/iotmap
 ```
+
+## Restoring people
+
+The original `people.bson` is in the external backup, not this repository.
+Restore only that collection with `mongorestore --db iotmap --collection people`
+and the path to the BSON file. For Atlas, also provide the destination URI using
+the MongoDB Database Tools' secure configuration or password prompt.
+
+People can share a first name. On databases initialized with the old model,
+remove its unique index before restoring:
+
+```javascript
+use iotmap
+db.people.getIndexes()
+db.people.dropIndex("first_name_1")
+```
+
+Only drop `first_name_1` if it exists; retain the `_id_` index. Removing `unique`
+from the model does not remove an existing database index.
+Check the existing collection before importing: `mongorestore` inserts records,
+does not merge matching `_id` values, and failures can leave a partial import.
+Do not use `--drop` unless replacing the collection is intentional and backed up.
 
 ## Backup
 
