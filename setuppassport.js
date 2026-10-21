@@ -21,6 +21,10 @@ var LocalStrategy = require("passport-local").Strategy;
 
 // tell Passport to use a local strategy
 passport.use("login", new LocalStrategy(function(username, password, done) {
+    var invalidCredentials = { message: "Invalid username or password" };
+    if (typeof username !== "string" || typeof password !== "string") {
+        return done(null, false, invalidCredentials);
+    }
 
     // use a MongoDB query to get one user
     User.findOne({ username: username }).exec().then(function(user) {
@@ -28,7 +32,7 @@ passport.use("login", new LocalStrategy(function(username, password, done) {
         // if there is no user with the supplied username, return false with an
         // error message. Call the checkPassword method defined in the User model
         if (!user) {
-            return done(null, false, { message: "No user has that username!" });
+            return done(null, false, invalidCredentials);
         }
 
         user.checkPassword(password, function (err, isMatch) {
@@ -39,8 +43,7 @@ passport.use("login", new LocalStrategy(function(username, password, done) {
             if (isMatch) {
                 return done(null, user);
             } else {
-                // if not a match, return false with an error message
-                return done(null, false, { message: "Invalid password." });
+                return done(null, false, invalidCredentials);
             }
         });
     }).catch(done);

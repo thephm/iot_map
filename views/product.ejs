@@ -161,7 +161,7 @@
         <% for (s=0; s < standards.length; s++) {
           if (s) {%>, <% }
           if (product.standard[ s ].slug) {%>
-            <a href="#" onclick="clickedStandard('<%= product.standard[ s ].slug %>');">
+            <a href="#" data-action="standard" data-slug="<%= product.standard[ s ].slug %>">
           <%}%>
           <%= standards[ s ].name %>
           <%if (product.standard[ s ].slug) {%></a><%}%>
@@ -174,7 +174,7 @@
         <% for (y=0; y < product.integration.length; y++) {
           if (y) {%>, <% }
           if (product.integration[ y ].slug) {%>
-            <a href="#" onclick="loadIntegration('<%= product.integration[ y ].slug %>');">
+            <a href="#" data-action="integration" data-slug="<%= product.integration[ y ].slug %>">
           <%}%>
           <%= product.integration[ y ].name %>
           <%if (product.integration[ y ].slug) {%></a><%}%>

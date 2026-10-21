@@ -4,6 +4,8 @@ services:
     build: .
     ports:
       - "3030:3000"
+    env_file:
+      - .env
     environment:
       - MONGODB_URI=${MONGODB_URI:-mongodb://mongo:27017/iotmap}
       - SHOW_PRODUCT_URLS=${SHOW_PRODUCT_URLS:-false}

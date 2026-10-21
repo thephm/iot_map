@@ -1,32 +1,50 @@
-# Setup instructions for IoT Map
+# Database setup and backups
 
-## Run
+The regular application setup is in the [README](../README.md). This page
+covers restoring and backing up MongoDB data.
 
-1. Startup so Mongo is running in a container
+## Restore the repository's organization data
 
-```shell
-cd c:\data\src\iot_map
-docker-compose up
-```
+The repository's `dump/` directory contains `organizations.bson` and its
+metadata. The metadata files for `people`, `users`, and GridFS collections do
+not include their records; those BSON files are not in this repository.
 
-2. Find the backup / mongo export
+Start MongoDB with Docker Compose and copy the dump into the container:
 
-3. Import the data (put the `.bson` / `.metadata.json` files in `dump/`)
-
-```shell
+```powershell
+docker compose up -d mongo
 docker compose cp dump/. mongo:/tmp/iotmap
-docker compose exec mongo mongorestore --drop --db iotmap /tmp/iotmap
 ```
 
-## Restoring people
+To replace the `organizations` collection with the repository copy, run:
+
+```powershell
+docker compose exec mongo mongorestore --drop --db iotmap --collection organizations /tmp/iotmap/organizations.bson
+```
+
+`--drop` deletes the destination collection before restoring it. Back up any
+data you need first. If you do not want to replace the collection, omit
+`--drop`; documents with IDs already in the database can cause duplicate-key
+errors, and a restore that reports errors may have imported only some records.
+
+## Restore people data
 
 The original `people.bson` is in the external backup, not this repository.
-Restore only that collection with `mongorestore --db iotmap --collection people`
-and the path to the BSON file. For Atlas, also provide the destination URI using
-the MongoDB Database Tools' secure configuration or password prompt.
+Restore that collection from the backup using MongoDB Database Tools, replacing
+the example path with the location of the BSON file:
+
+```powershell
+mongorestore --host localhost --db iotmap --collection people "C:\path\to\people.bson"
+```
+
+For Atlas, provide the destination URI using the Database Tools' secure
+configuration or password prompt. Check the existing collection before
+importing: restores do not merge matching `_id` values, and failures can leave
+a partial import. Do not use `--drop` unless replacing the collection is
+intentional and backed up.
 
 People can share a first name. On databases initialized with the old model,
-remove its unique index before restoring:
+check for and remove its unique index before restoring:
 
 ```javascript
 use iotmap
@@ -34,216 +52,17 @@ db.people.getIndexes()
 db.people.dropIndex("first_name_1")
 ```
 
-Only drop `first_name_1` if it exists; retain the `_id_` index. Removing `unique`
-from the model does not remove an existing database index.
-Check the existing collection before importing: `mongorestore` inserts records,
-does not merge matching `_id` values, and failures can leave a partial import.
-Do not use `--drop` unless replacing the collection is intentional and backed up.
+Only drop `first_name_1` if it exists; retain the `_id_` index. Removing
+`unique` from the model does not remove an existing database index.
 
-## Backup
+## Back up a database
 
-1. Use `mongodump` outside of the running container
+With the Compose MongoDB port published on localhost, install MongoDB Database
+Tools on the host and run:
 
-```shell
-mongodump --host localhost --db iotmap
+```powershell
+mongodump --host localhost --db iotmap --out .\backup
 ```
 
----
-
-## Older notes
-
-### Setup instructions for IoT Map
-
-- Install Mongo
-	- https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/
-
-- setup Mongo to start on boot
-	- https://www.digitalocean.com/community/tutorials/how-to-install-mongodb-on-ubuntu-16-04
-
-
-```shell
-sudo nano /etc/systemd/system/mongodb.service
-```
-
-- paste this and save
-
-```
-[Unit]
-Description=High-performance, schema-free document-oriented database
-After=network.target
-
-[Service]
-User=mongodb
-ExecStart=/usr/bin/mongod --quiet --config /etc/mongod.conf
-
-[Install]
-WantedBy=multi-user.target
-```
-
-- start Mongo
-
-```shell
-sudo systemctl start mongodb
-```
-
-- check Mongo has started
-
-```shell
-sudo systemctl status mongodb
-```
-
-- set Mongo to start on startup
-
-```shell
-sudo systemctl enable mongodb
-```
-
-- setup firewall so Mongo not accessible from Internet -- DO THIS LATER!
-	- https://www.digitalocean.com/community/tutorials/initial-server-setup-with-ubuntu-16-04
-
-- install Node.js (this one pointed to the 2nd link on setting up Production instance)
-	- https://www.digitalocean.com/community/tutorials/how-to-install-node-js-on-ubuntu-16-04
-
-
-```shell
-sudo npm install
-```
-
-- see the list of packages installed by me
-
-```shell
-npm list -g --depth=0
-```
-
-- Install PM2
-
-```shell
-sudo npm install pm2 -g
-ln -s /usr/bin/nodejs /usr/bin/node
-```
-
-- start an application
-
-```shell
-sudo pm2 start app.js
-```
-
-- If using Express then start the app like this:
-
-
-```shell
-pm2 start ./bin/www --name="app"
-```
-
-- List all running processes:
-
-```shell
-sudo pm2 list
-┌──────────┬────┬──────┬──────┬────────┬─────────┬────────┬─────┬───────────┬──────────┐
-│ App name │ id │ mode │ pid  │ status │ restart │ uptime │ cpu │ mem       │ watching │
-├──────────┼────┼──────┼──────┼────────┼─────────┼────────┼─────┼───────────┼──────────┤
-│ app      │ 0  │ fork │ 2713 │ online │ 6       │ 2M     │ 0%  │ 21.0 MB   │ disabled │
-└──────────┴────┴──────┴──────┴────────┴─────────┴────────┴─────┴───────────┴──────────┘
-```
-
-- It will list all process. You can then stop / restart your service by using ID or Name of the app with following command.
-
-```shell
-sudo pm2 stop all
-sudo pm2 stop 0
-sudo pm2 restart all
-```
-
-- to display logs
-
-```shell
-sudo pm2 logs ['all'|app_name|app_id]
-```
-
-### HTTPS setup
-
-- https://git.daplie.com/Daplie/greenlock-express
-
-- install greenlock-express
-
-```shell
-npm install --save greenlock-express@2.x
-```
-
-- in app.js
-
-```js
-'use strict';
-
-require('greenlock-express').create({
-
-	server: 'https://acme-v01.api.letsencrypt.org/directory',
-	email: 'iotmap@ownmail.net',
-	agreeTos: true,
-	approveDomains: ['iotmap.ca'],
-	app: require('express')().use('/', function (req, res) {
-		res.end('Hello, World!');
-	})
-
-}).listen(80, 443);
-```
-
-- Dump Mongo db, puts it in dump\iotmap
-
-
-```shell
-mongodump --db iotmap
-```
-
-- import a dump
-
-```shell
-mongorestore --db iotmap dump\iotmap
-```
-
-- install nginx proxy manager
-
-- https://nginxproxymanager.jc21.com/
-
-- start it
-
-```shell
-docker-compose up -d
-```
-
-- get container ID of mariadb
-
-```shell
-docker ps 
-```
-
-- get a shell in the DB container
-
-```shell
-docker exec -it af67b35d6c1b bash
-```
-
-- login to mariadb and change root password
-
-```shell
-mysql -u root -p
-ALTER USER 'root'@'localhost' IDENTIFIED BY 'blah';
-```
-
-- access it!
-
-```
-http://iotmap.ca:81
-```
-
-- get container ID of nginx
-
-```shell
-docker exec -it f215c55baba9 bash
-```
-
-- check the config
-
-```shell
-nginx -t
-```
+This creates `backup/iotmap/`. Keep backups secure, especially those containing
+people or login-user records, and verify the backup before replacing data.

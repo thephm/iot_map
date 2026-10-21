@@ -11,24 +11,14 @@ var userSchema = mongoose.Schema({
   bio: String
 });
 
-var noop = function() {};
-
 // "pre-save action": before saving the user, encrypt the password
-userSchema.pre("save", function(done) {
-  var user = this;
-
-  if (!user.isModified("password")) {
-    return done();
+userSchema.pre("save", async function() {
+  if (!this.isModified("password")) {
+    return;
   }
 
-  bcrypt.genSalt(SALT_FACTOR, function(err, salt) {
-    if (err) { return done(err); }
-    bcrypt.hash(user.password, salt, noop, function(err, hashedPassword) {
-      if (err) { return done(err); }
-      user.password = hashedPassword;
-      done();
-    });
-  });
+  var salt = await bcrypt.genSalt(SALT_FACTOR);
+  this.password = await bcrypt.hash(this.password, salt);
 });
 
 userSchema.methods.checkPassword = function(guess, done) {

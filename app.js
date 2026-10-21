@@ -1,78 +1,96 @@
-// IoT Map main Node.js file
-
-// Load the `.env` file to get:
-//
-// GOOGLE_MAPS_API_KEY=blah
-// SESSION_SECRET = guess
-// 
 require('dotenv').config();
 
-// Express middleware for parsing body of incoming HTTP requests. It 
-// extracts the body of an incoming stream and exposes it on `req.body`
-var bodyParser = require("body-parser"); 
-
-// Express middleware to parse cookies attached to incoming HTTP requests
+var crypto = require("crypto");
 var cookieParser = require("cookie-parser");
-
-// Express.js web app framework for Node.js 
 var express = require("express");
-
-// Mongo database access
 var mongoose = require("mongoose");
-
-// Node.js authentication middleware for credentials including OAuth, JWT
+var MongoStore = require("connect-mongo").default;
+var helmet = require("helmet");
 var passport = require("passport");
-
-// Node.js cross-platform utilities for file and directory paths
 var path = require("path");
-
-// Express middleware for session management
-var session = require('express-session');
-var flash = require('connect-flash');
-
-// Express middleware to serve the favicon ("favorite icon")
-//var favicon = require("serve-favicon");
-
+var session = require("express-session");
+var flash = require("connect-flash");
 var setUpPassport = require("./setuppassport");
 
+if (!process.env.SESSION_SECRET) {
+    throw new Error("SESSION_SECRET is required");
+}
+
+mongoose.set("sanitizeFilter", true);
+
 var app = express();
+app.set("trust proxy", 1);
+app.set("port", process.env.PORT || 3000);
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "ejs");
 app.locals.showProductUrls = process.env.SHOW_PRODUCT_URLS === 'true';
 app.locals.socialIcons = require('./config/social-icons.json');
 
 setUpPassport();
 
-//app.set("port", process.env.PORT || 443);
-app.set("port", process.env.PORT || 3000);
+app.use(function (req, res, next) {
+    res.locals.cspNonce = crypto.randomBytes(16).toString("base64");
+    next();
+});
 
-// view engine setup
-app.set("views", path.join(__dirname, "views"));
-app.set("view engine", "ejs");
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: [
+                "'self'",
+                function (req, res) { return "'nonce-" + res.locals.cspNonce + "'"; },
+                "https://ajax.googleapis.com",
+                "https://maps.googleapis.com",
+                "https://maps.gstatic.com"
+            ],
+            scriptSrcAttr: ["'none'"],
+            styleSrc: [
+                "'self'",
+                "'unsafe-inline'",
+                "https://maxcdn.bootstrapcdn.com",
+                "https://cdnjs.cloudflare.com",
+                "https://fonts.googleapis.com"
+            ],
+            imgSrc: [
+                "'self'",
+                "data:",
+                "blob:",
+                "https://maps.google.com",
+                "https://*.googleapis.com",
+                "https://*.gstatic.com",
+                "https://*.google.com",
+                "https://*.googleusercontent.com"
+            ],
+            connectSrc: [
+                "'self'",
+                "https://*.googleapis.com",
+                "https://*.gstatic.com",
+                "https://*.google.com"
+            ],
+            fontSrc: [
+                "'self'",
+                "data:",
+                "https://cdnjs.cloudflare.com",
+                "https://maxcdn.bootstrapcdn.com",
+                "https://fonts.gstatic.com"
+            ],
+            frameSrc: ["https://www.google.com", "https://maps.google.com"],
+            workerSrc: ["'self'", "blob:"],
+            objectSrc: ["'none'"],
+            baseUri: ["'self'"],
+            formAction: ["'self'"],
+            upgradeInsecureRequests: null
+        }
+    }
+}));
 
-// uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, "public", "favicon.ico")));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "static")));
 
-app.use(session({
-    secret: process.env.SESSION_SECRET,
-    resave: true,
-    saveUninitialized: true
-}));
-
-app.use(flash());
-app.use(passport.initialize());
-app.use(passport.session());
-
 var routes = require("./routes");
-app.use(routes);
-
-// handle `next(err)` calls
-//app.use(function (err, req, res, next) {
-    // do nothing for now
-//    next();
-//});
 
 async function start() {
     try {
@@ -81,6 +99,46 @@ async function start() {
         }
         await mongoose.connect(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 30000 });
         console.log("MongoDB connected");
+
+        app.use(session({
+            secret: process.env.SESSION_SECRET,
+            store: MongoStore.create({
+                client: mongoose.connection.getClient(),
+                collectionName: "sessions"
+            }),
+            resave: false,
+            saveUninitialized: false,
+            cookie: {
+                httpOnly: true,
+                sameSite: "lax",
+                secure: app.get("env") === "production"
+            }
+        }));
+        app.use(flash());
+        app.use(passport.initialize());
+        app.use(passport.session());
+        app.use(routes);
+        app.use(function (req, res) {
+            res.status(404).send("Not Found");
+        });
+        app.use(function (error, req, res, next) {
+            if (res.headersSent) {
+                return next(error);
+            }
+
+            var details = error && error.stack ? error.stack : String(error);
+            details = details.replace(/mongodb(?:\+srv)?:\/\/[^\s"'<>]+/gi, '[redacted MongoDB URI]');
+            console.error("Request failed:", details);
+
+            var status = Number.isInteger(error)
+                ? error
+                : error && (error.status || error.statusCode);
+            if (!Number.isInteger(status) || status < 400 || status > 599) {
+                status = 500;
+            }
+            res.status(status).send(status === 404 ? "Not Found" : "Something went wrong");
+        });
+
         app.listen(app.get("port"), function() {
             console.log("Server started on port " + app.get("port"));
         });

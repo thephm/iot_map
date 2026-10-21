@@ -16,6 +16,7 @@ label {
     border-color:green;
 }
 
+.organization-panel:hover,
 .panel.hover {
     border-color:blue;
 }
@@ -204,7 +205,7 @@ html, body {
     padding: 0;
 }
 </style>
-<script>
+<script nonce="<%= cspNonce %>">
 (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
 	key: "<%= process.env.GOOGLE_MAPS_API_KEY %>",
 	v: "weekly"
@@ -270,9 +271,9 @@ window.onload = function() {
 	        id = event.feature.getId();
 	        category = event.feature.getProperty('category');
 	        subCategory = event.feature.getProperty('sub-category');
-	        content = '<b>' + name + '</b>';
-
-	        infoWindow.setContent(content);
+            var title = document.createElement('strong');
+            title.textContent = name;
+            infoWindow.setContent(title);
             infoWindow.setPosition(event.latLng);
             infoWindow.open(map);
         }
@@ -754,13 +755,20 @@ window.onload = function() {
             return html;
         }
 		
-        // expose functions used by inline onclick/onchange handlers in the views
-        window.search = search;
-        window.clickedPin = clickedPin;
-        window.zoomToOrganization = zoomToOrganization;
-        window.loadProduct = loadProduct;
-        window.loadIntegration = loadIntegration;
-        window.clickedStandard = clickedStandard;
+        $(document).on('click', '[data-action]', function(event) {
+            var action = this.dataset.action;
+            var slug = this.dataset.slug;
+            if (!slug) return;
+            event.preventDefault();
+            if (action === 'pin') clickedPin(slug);
+            else if (action === 'product') loadProduct(slug);
+            else if (action === 'integration') loadIntegration(slug);
+            else if (action === 'standard') clickedStandard(slug);
+        });
+        $(document).on('click', '.organization-panel', function(event) {
+            if ($(event.target).closest('[data-action]').length) return;
+            zoomToOrganization(this.dataset.orgSlug);
+        });
 
         function runNavSearch() {
             var input = document.getElementById('nav-search');
