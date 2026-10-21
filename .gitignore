@@ -15,4 +15,5 @@ package_ts.json
 iot_map.njsproj.user
 *-boilerplate.js
 config/*.json
+!config/social-icons.json
 .env
