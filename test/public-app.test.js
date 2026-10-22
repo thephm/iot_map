@@ -98,6 +98,10 @@ test('public app starts without session credentials and serves read-only routes'
         assert.match(response.headers.get('content-security-policy'), /script-src 'self' 'nonce-/);
         const html = await response.text();
         assert.match(html, /Database totals/);
+        for (const section of ['primary_category secondary_category', 'mapDiv']) {
+            assert.ok(html.includes('aria-expanded="true" aria-controls="' + section + '"'));
+        }
+        assert.match(html, /src="\/js\/mobile-layout.js"/);
         assert.doesNotMatch(html, /action="\/(?:login|logout|edit)"/);
         const scripts = html.match(/<script src="https:\/\/ajax\.googleapis\.com[^>]+>/g);
         assert.equal(scripts.length, 2);
@@ -105,6 +109,105 @@ test('public app starts without session credentials and serves read-only routes'
             assert.match(script, /integrity="sha384-[A-Za-z0-9+/=]+"/);
             assert.match(script, /crossorigin="anonymous"/);
         }
+    });
+
+    await t.test('mobile filters toggle together, map toggles independently, and products follow companies', function () {
+        const events = [];
+        const productClasses = new Set();
+        const placements = [];
+        const sections = {
+            products: {
+                classList: {
+                    add: function (name) { productClasses.add(name); },
+                    remove: function (name) { productClasses.delete(name); }
+                }
+            },
+            'map-column': {
+                appendChild: function (section) {
+                    assert.equal(section, sections.products);
+                    placements.push('below-map');
+                }
+            },
+            organizations: {
+                after: function (section) {
+                    assert.equal(section, sections.products);
+                    placements.push('after-company');
+                }
+            }
+        };
+        let layoutChange;
+        const mobileLayout = {
+            matches: true,
+            addEventListener: function (name, handler) {
+                assert.equal(name, 'change');
+                layoutChange = handler;
+            }
+        };
+        const buttons = ['primary_category', 'secondary_category', 'mapDiv'].map(function (id) {
+            const classes = new Set();
+            sections[id] = {
+                id: id,
+                classList: {
+                    toggle: function (name, enabled) {
+                        if (enabled) { classes.add(name); } else { classes.delete(name); }
+                    },
+                    contains: function (name) { return classes.has(name); }
+                }
+            };
+            const attributes = {
+                'aria-expanded': 'true',
+                'aria-controls': id === 'mapDiv' ? id : 'primary_category secondary_category'
+            };
+            return {
+                getAttribute: function (name) { return attributes[name]; },
+                setAttribute: function (name, value) { attributes[name] = value; },
+                addEventListener: function (name, handler) {
+                    assert.equal(name, 'click');
+                    this.click = handler;
+                }
+            };
+        });
+        vm.runInNewContext(fs.readFileSync(path.join(__dirname, '..', 'static', 'js', 'mobile-layout.js'), 'utf8'), {
+            window: {
+                matchMedia: function (query) {
+                    assert.equal(query, '(max-width: 767px)');
+                    return mobileLayout;
+                }
+            },
+            document: {
+                querySelectorAll: function () { return buttons; },
+                getElementById: function (id) { return sections[id]; },
+                dispatchEvent: function (event) { events.push(event.type); }
+            },
+            Event: Event
+        });
+        assert.deepEqual(placements, ['after-company']);
+        assert.equal(productClasses.has('col-xs-12'), true);
+        mobileLayout.matches = false;
+        layoutChange();
+        assert.deepEqual(placements, ['after-company', 'below-map']);
+        assert.equal(productClasses.has('col-xs-12'), false);
+        mobileLayout.matches = true;
+        layoutChange();
+        assert.deepEqual(placements, ['after-company', 'below-map', 'after-company']);
+        buttons[0].click();
+        assert.equal(buttons[0].getAttribute('aria-expanded'), 'false');
+        assert.equal(buttons[1].getAttribute('aria-expanded'), 'false');
+        assert.equal(sections.primary_category.classList.contains('mobile-section-collapsed'), true);
+        assert.equal(sections.secondary_category.classList.contains('mobile-section-collapsed'), true);
+        assert.equal(buttons[2].getAttribute('aria-expanded'), 'true');
+        buttons[1].click();
+        assert.equal(buttons[0].getAttribute('aria-expanded'), 'true');
+        assert.equal(buttons[1].getAttribute('aria-expanded'), 'true');
+        assert.equal(sections.primary_category.classList.contains('mobile-section-collapsed'), false);
+        assert.equal(sections.secondary_category.classList.contains('mobile-section-collapsed'), false);
+        buttons[2].click();
+        assert.equal(sections.mapDiv.classList.contains('mobile-section-collapsed'), true);
+        assert.equal(buttons[0].getAttribute('aria-expanded'), 'true');
+        assert.deepEqual(events, []);
+        buttons[2].click();
+        assert.equal(sections.mapDiv.classList.contains('mobile-section-collapsed'), false);
+        assert.deepEqual(events, ['mapexpanded']);
     });
 
     await t.test('organization links use existing URL normalization', async function () {

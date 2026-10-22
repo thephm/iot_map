@@ -5,6 +5,12 @@ This is an older project being maintained; many company and product links in the
 
 Select a category and subcategory to filter organizations and map markers.
 Select an organization to see its details and products, or use the search field.
+On mobile, Category and Sub-Category appear side by side when space permits and
+stack on narrower screens. Either attached heading collapses or expands both
+filter lists together; the Map button controls the map independently.
+Company details stay in view without jumping to the
+page top, with products below the company; Back restores your position in the results.
+Desktop sections stay expanded, with products below the map.
 Category and subcategory counts show distinct organizations, not products or map markers.
 Each subcategory count is scoped to its parent category; organizations with multiple matching products count only once.
 Type pills beneath organization names summarize the hardware, software, and services provided across all their products, with each type shown only once.
