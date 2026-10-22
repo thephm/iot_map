@@ -9,7 +9,6 @@ services:
     environment:
       - MONGODB_URI=${MONGODB_URI:-mongodb://mongo:27017/iotmap}
       - SHOW_PRODUCT_URLS=${SHOW_PRODUCT_URLS:-false}
-      - DEBUG=express:*
     depends_on:
       - mongo
 

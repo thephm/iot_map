@@ -8,16 +8,6 @@ var Person = require("./models/person");
 
 var express = require('express');
 var mongoose = require('mongoose');
-var passport = require('passport');
-var rateLimit = require('express-rate-limit');
-var csrfSync = require('csrf-sync').csrfSync;
-var csrf = csrfSync({
-    getTokenFromRequest: function (req) {
-        return req.body && req.body._csrf;
-    }
-});
-var csrfProtection = csrf.csrfSynchronisedProtection;
-var generateCsrfToken = csrf.generateToken;
 
 var router = express.Router();
 
@@ -129,21 +119,6 @@ function getGeoJSON(organizations) {
 
 } // getGeoJSON
 
-// set some useful variables for the templates
-router.use(function (req, res, next) {
-
-    // every view will have access to currentUser, which pulls from req.user,
-    // which is populated by Passport
-    res.locals.currentUser = req.user;
-    if (req.isAuthenticated && req.isAuthenticated()) {
-        res.locals.csrfToken = generateCsrfToken(req);
-    }
-
-    res.locals.errors = req.flash("error");
-    res.locals.infos = req.flash("info");
-    next();
-});
-
 // ------------------------------------------------------------------
 
 router.get('/', function (req, res, next) {
@@ -211,62 +186,6 @@ router.get('/organizations', function (req, res, next) {
         })
         .catch(next);
 
-});
-
-router.get("/login", function (req, res) {
-    res.render("login", { csrfToken: generateCsrfToken(req) });
-});
-
-var loginLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    limit: 10,
-    standardHeaders: "draft-8",
-    legacyHeaders: false,
-    message: { error: "Too many login attempts. Please try again later." }
-});
-
-router.post("/login", loginLimiter, csrfProtection, function (req, res, next) {
-    var body = req.body || {};
-    if (typeof body.username !== "string" || typeof body.password !== "string") {
-        req.flash("error", "Invalid username or password");
-        return res.redirect("/login");
-    }
-    next();
-}, passport.authenticate("login", {
-    successRedirect: "/",
-    failureRedirect: "/login",
-    failureFlash: true
-}));
-
-router.post("/logout", csrfProtection, function (req, res, next) {
-    req.logout(function (error) {
-        if (error) {
-            return next(error);
-        }
-        res.redirect("/");
-    });
-});
-
-function ensureAuthenticated(req, res, next) {
-    if (req.isAuthenticated()) {
-        next();
-    } else {
-        req.flash("info", "You must be logged in to see this page.");
-        res.redirect("/login");
-    }
-}
-
-router.get("/edit", ensureAuthenticated, function (req, res) {
-    res.render("edit", { csrfToken: generateCsrfToken(req) });
-});
-
-router.post("/edit", csrfProtection, ensureAuthenticated, function (req, res, next) {
-    req.user.displayName = req.body.displayname;
-    req.user.bio = req.body.bio;
-    req.user.save().then(function () {
-        req.flash("info", "User updated!");
-        res.redirect("/edit");
-    }).catch(next);
 });
 
 router.get("/organization/:orgSlug", function (req, res, next) {

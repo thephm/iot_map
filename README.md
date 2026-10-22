@@ -26,18 +26,11 @@ Create a `.env` file in the repository root:
 
 ```dotenv
 GOOGLE_MAPS_API_KEY=your_google_maps_api_key
-SESSION_SECRET=your_random_session_secret
 SHOW_PRODUCT_URLS=false
 ```
 
-Generate a session secret with Node.js:
-
-```powershell
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-```
-
-`SESSION_SECRET` is required; the app exits at startup if it is missing.
-Production session cookies are secure, HTTP-only, and same-site.
+The public app is read-only and does not use login accounts, sessions, or cookies.
+`SESSION_SECRET` is no longer needed and can be removed from existing deployments.
 
 Keep `.env` out of version control.
 Docker Compose reads it at runtime, and `.dockerignore` excludes it from the image build context.
@@ -46,7 +39,7 @@ Do not bake secrets into an image.
 | Variable | Purpose | Default |
 | --- | --- | --- |
 | `GOOGLE_MAPS_API_KEY` | Browser key for the Google Maps JavaScript API | Required for the map |
-| `SESSION_SECRET` | Secret used to sign sessions | Required |
+| `NODE_ENV` | Express runtime environment | Docker image: `production`; set explicitly for other production deployments |
 | `MONGODB_URI` | MongoDB connection URI, including the database name | Docker Compose: `mongodb://mongo:27017/iotmap`; required when running Node directly |
 | `SHOW_PRODUCT_URLS` | Show product website URLs when set to exactly `true` | `false` |
 | `PORT` | HTTP port used by Node | `3000`; Compose publishes it on host port `3030` |
@@ -63,7 +56,9 @@ Open http://localhost:3030.
 The local MongoDB service is available on port `27017`, with data persisted in the `mongodata` Docker volume.
 
 To use Atlas instead of local MongoDB, add its connection URI as `MONGODB_URI` in `.env`.
-Permit your IP in Atlas Network Access and use a database user with access to `iotmap`.
+Permit your IP in Atlas Network Access and give the public app's database user only the `read` role on `iotmap`.
+The app does not write sessions or users, and automatic collection and index creation are disabled.
+Manage data and indexes separately with administrative credentials; do not give those credentials to the public app.
 Do not commit the URI or credentials.
 
 After code or dependency changes, rebuild with `docker compose up -d --build iot_map`.
@@ -90,7 +85,13 @@ Open http://localhost:3000.
 Deploy the Dockerfile on Render and set the environment variables above in the service settings.
 Use Atlas for `MONGODB_URI`; the local Compose MongoDB hostname is not available on Render.
 Render provides these variables at runtime; `.env` is not included in the image.
-Allow the Render service's outbound IP ranges (shown in its dashboard) in Atlas Network Access, and confirm the database user has access to `iotmap`.
+Allow the Render service's outbound IP ranges (shown in its dashboard) in Atlas Network Access, and confirm the database user has only the `read` role on `iotmap`.
+
+The Docker image defaults to `NODE_ENV=production`. Explicitly set `NODE_ENV=production`
+in Render's **Environment** settings as well, removing any development override.
+After redeploying, use the Render shell to run `printenv NODE_ENV` and confirm it prints
+`production`. The repository cannot confirm a live service's environment settings.
+The public app no longer issues session cookies, so cookie security no longer depends on this setting.
 
 The server waits for MongoDB before listening.
 A failed connection logs `MongoDB startup failed` and exits instead of serving pages with buffered queries.
@@ -111,10 +112,18 @@ Check existing data before restoring: imports can partially succeed, and `--drop
 Back up existing data before replacing it.
 Treat people records and login-user backups as sensitive.
 
-Public signup, the organization creation form, and the `/users` and `/users/:username` routes are removed.
-Only accounts provisioned by an administrator can log in; there is no public account creation flow.
-Login is rate-limited and protected by CSRF tokens; logout is a CSRF-protected POST.
-Profile edits require authentication and CSRF protection.
+Public signup, login, logout, profile editing, the organization creation form,
+and the `/users` and `/users/:username` routes are removed.
+`/login`, `/logout`, and `/edit` return 404; there is no public write flow or request-body parser.
+Passport, session storage, and their supporting dependencies are removed.
+Existing `users` and `sessions` collections are not deleted or modified by this change.
+
+A future, separate admin app must use its own database credentials and validate
+website URLs on write, accepting only valid absolute `http:` or `https:` URLs
+(including founder, post, stock, organization, product, and social links).
+Do not rely on template URL normalization or CSP as write validation.
+
+Run the public-app regression tests with `npm test`.
 
 [IoT Thing of Things.xlsx](docs/IoT%20Thing%20of%20Things.xlsx) is a backlog of companies and products that had not yet been added to MongoDB.
 

@@ -1,20 +1,10 @@
 require('dotenv').config();
 
 var crypto = require("crypto");
-var cookieParser = require("cookie-parser");
 var express = require("express");
 var mongoose = require("mongoose");
-var MongoStore = require("connect-mongo").default;
 var helmet = require("helmet");
-var passport = require("passport");
 var path = require("path");
-var session = require("express-session");
-var flash = require("connect-flash");
-var setUpPassport = require("./setuppassport");
-
-if (!process.env.SESSION_SECRET) {
-    throw new Error("SESSION_SECRET is required");
-}
 
 mongoose.set("sanitizeFilter", true);
 
@@ -25,8 +15,6 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 app.locals.showProductUrls = process.env.SHOW_PRODUCT_URLS === 'true';
 app.locals.socialIcons = require('./config/social-icons.json');
-
-setUpPassport();
 
 app.use(function (req, res, next) {
     res.locals.cspNonce = crypto.randomBytes(16).toString("base64");
@@ -85,9 +73,6 @@ app.use(helmet({
     }
 }));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "static")));
 
 var routes = require("./routes");
@@ -97,26 +82,13 @@ async function start() {
         if (!process.env.MONGODB_URI) {
             throw new Error('MONGODB_URI is required');
         }
-        await mongoose.connect(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 30000 });
+        await mongoose.connect(process.env.MONGODB_URI, {
+            serverSelectionTimeoutMS: 30000,
+            autoCreate: false,
+            autoIndex: false
+        });
         console.log("MongoDB connected");
 
-        app.use(session({
-            secret: process.env.SESSION_SECRET,
-            store: MongoStore.create({
-                client: mongoose.connection.getClient(),
-                collectionName: "sessions"
-            }),
-            resave: false,
-            saveUninitialized: false,
-            cookie: {
-                httpOnly: true,
-                sameSite: "lax",
-                secure: app.get("env") === "production"
-            }
-        }));
-        app.use(flash());
-        app.use(passport.initialize());
-        app.use(passport.session());
         app.use(routes);
         app.use(function (req, res) {
             res.status(404).send("Not Found");
