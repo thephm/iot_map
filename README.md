@@ -33,6 +33,7 @@ Create a `.env` file in the repository root:
 ```dotenv
 GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 SHOW_PRODUCT_URLS=false
+MONGODB_ENVIRONMENT=development
 ```
 
 The public app is read-only and does not use login accounts, sessions, or cookies.
@@ -47,8 +48,14 @@ Do not bake secrets into an image.
 | `GOOGLE_MAPS_API_KEY` | Browser key for the Google Maps JavaScript API | Required for the map |
 | `NODE_ENV` | Express runtime environment | Docker image: `production`; set explicitly for other production deployments |
 | `MONGODB_URI` | MongoDB connection URI, including the database name | Docker Compose: `mongodb://mongo:27017/iotmap`; required when running Node directly |
+| `MONGODB_ENVIRONMENT` | Environment label shown in the UI; set it to match the MongoDB target | Compose: `development`; otherwise `unknown` |
 | `SHOW_PRODUCT_URLS` | Show product website URLs when set to exactly `true` | `false` |
 | `PORT` | HTTP port used by Node | `3000`; Compose publishes it on host port `3030` |
+
+The navbar shows the value of `MONGODB_ENVIRONMENT` so you can distinguish development
+and production data. The Compose default is `development` for its local MongoDB; if
+you override `MONGODB_URI`, also set this label to match. It is not inferred from the
+URI or `NODE_ENV`; set it to `production` in production service settings.
 
 ### Run with Docker Compose
 

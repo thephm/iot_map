@@ -69,7 +69,7 @@ test('public app starts without session credentials and serves read-only routes'
             return requireApp(name);
         },
         __dirname: root,
-        process: { env: { NODE_ENV: 'production', MONGODB_URI: 'mongodb://unused/iotmap' } },
+        process: { env: { NODE_ENV: 'production', MONGODB_URI: 'mongodb://unused/iotmap', MONGODB_ENVIRONMENT: 'development' } },
         console: console
     }, { filename: 'app.js' });
     if (!server.listening) { await once(server, 'listening'); }
@@ -98,6 +98,7 @@ test('public app starts without session credentials and serves read-only routes'
         assert.match(response.headers.get('content-security-policy'), /script-src 'self' 'nonce-/);
         const html = await response.text();
         assert.match(html, /Database totals/);
+        assert.match(html, /MongoDB: development/);
         for (const section of ['primary_category secondary_category', 'mapDiv']) {
             assert.ok(html.includes('aria-expanded="true" aria-controls="' + section + '"'));
         }

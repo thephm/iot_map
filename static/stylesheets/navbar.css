@@ -20,3 +20,9 @@
 .navbar.navbar-default .site-wordmark:focus {
     color: #23527c;
 }
+.navbar .database-environment {
+    color: #666;
+    font-size: 12px;
+    margin-left: 10px;
+    white-space: nowrap;
+}
