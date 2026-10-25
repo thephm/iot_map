@@ -10,7 +10,9 @@
       </button>
       <% } %>
       <a class="navbar-brand site-wordmark" href="/">IoT Map</a>
+      <% if (locals.mongoEnvironment) { %>
       <span class="database-environment" aria-label="MongoDB environment">MongoDB: <%= mongoEnvironment %></span>
+      <% } %>
     </div> <!-- navbar-header -->
 
     <div class="collapse navbar-collapse<%= locals.standaloneNavigation ? ' in' : '' %>">

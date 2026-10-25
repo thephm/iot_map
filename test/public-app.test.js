@@ -107,7 +107,7 @@ test('public app starts without session credentials and serves read-only routes'
         assert.match(response.headers.get('content-security-policy'), /script-src 'self' 'nonce-/);
         const html = await response.text();
         assert.match(html, /Database totals/);
-        assert.match(html, /MongoDB: development/);
+        assert.doesNotMatch(html, /MongoDB environment/);
         for (const section of ['primary_category secondary_category', 'mapDiv']) {
             assert.ok(html.includes('aria-expanded="true" aria-controls="' + section + '"'));
         }

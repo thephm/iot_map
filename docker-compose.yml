@@ -7,6 +7,7 @@ services:
     env_file:
       - .env
     environment:
+      - NODE_ENV=${NODE_ENV:-development}
       - MONGODB_URI=${MONGODB_URI:-mongodb://mongo:27017/iotmap}
       - MONGODB_ENVIRONMENT=${MONGODB_ENVIRONMENT:-development}
       - SHOW_PRODUCT_URLS=${SHOW_PRODUCT_URLS:-false}

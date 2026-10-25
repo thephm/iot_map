@@ -14,7 +14,8 @@ app.set("port", process.env.PORT || 3000);
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 app.locals.showProductUrls = process.env.SHOW_PRODUCT_URLS === 'true';
-app.locals.mongoEnvironment = process.env.MONGODB_ENVIRONMENT || 'unknown';
+app.locals.mongoEnvironment = process.env.NODE_ENV === 'production' ? '' :
+    process.env.MONGODB_ENVIRONMENT || 'unknown';
 app.locals.socialIcons = require('./config/social-icons.json');
 
 app.use(function (req, res, next) {
