@@ -37,7 +37,10 @@ current slug. Stored position slugs and company-name guesses are not used for na
 Deleted organizations render as plain text, not broken links. Organization detail
 responses (including search and standard lookup) include people whose positions reference
 that organization ID, with links back to people that have slugs. Embedded founders support
-both legacy `name` and new `first_name`/`last_name` values.
+both legacy `name` and new `first_name`/`last_name` values. After `migrate-founders`, a founder
+links to their person page when exactly one person listed for the organization has the same
+name (normalized for case and whitespace) and a position titled with "founder"; otherwise the
+founder's stored URL, if any, is kept.
 Direct organization visits render a full page; map AJAX requests retain their HTML fragments.
 
 Birthday is excluded explicitly from every public person document query and by default

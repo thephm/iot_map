@@ -20,14 +20,17 @@
   <p>Founded: <%= organization.history.founded_year %></p>
 <% } %>
 
-<% if (organization.history.founder.length) { %><p>Founders:<% } %>
-<% for (i=0; i < organization.history.founder.length; i++) {
-  founder = organization.history.founder[ i ]; %>
+<% var founderLinks = locals.founders || organization.history.founder.map(function (founder) {
+  return { name: [founder.first_name, founder.last_name].filter(Boolean).join(' ') || founder.name || 'Unnamed founder',
+    href: '', url: organization.checkUrl(founder.url) };
+}); %>
+<% if (founderLinks.length) { %><p>Founders:<% } %>
+<% founderLinks.forEach(function (founder, i) { %>
   <% if (i) { %>, <% } %>
-  <% var founderUrl = organization.checkUrl(founder.url); %>
-  <% if (founderUrl) { %><a href="<%= founderUrl %>" target="<%= organization.slug %>"><% } %>
-    <%= [founder.first_name, founder.last_name].filter(Boolean).join(' ') || founder.name || 'Unnamed founder' %><% if (founderUrl) { %></a><% } %>
-<% } %>
+  <% if (founder.href) { %><a href="<%= founder.href %>"><%= founder.name %></a>
+  <% } else if (founder.url) { %><a href="<%= founder.url %>" target="<%= organization.slug %>"><%= founder.name %></a>
+  <% } else { %><%= founder.name %><% } %>
+<% }); %>
 <!--
 <% if (organization.post.length) { %><p>Posted:<% } %>
 <% for (i=0; i < organization.post.length; i++) {

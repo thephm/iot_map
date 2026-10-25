@@ -111,6 +111,39 @@ test('organization people queries exclude birthdays and match IDs in either BSON
     assert.doesNotMatch(JSON.stringify(result), /birthday|private|Unresolved Co/);
 });
 
+test('embedded founders link to a unique matching Founder person and otherwise keep stored values', async function () {
+    const founder = (name, href, title) => ({ name, href, positions: [{ title }] });
+    const people = [
+        founder('Ada Lovelace', '/people/ada-lovelace', 'Co-Founder & CEO'),
+        founder('Grace Hopper', '/people/grace-hopper', 'Engineer'),
+        founder('Jo Lee', '/people/jo-lee', 'Founder'),
+        founder('jo  lee', '/people/jo-lee-2', 'Founder'),
+        founder('Unlinked', '', 'Founder')
+    ];
+    const founders = publicPeople.organizationFounders(new Organization({ history: { founder: [
+        { first_name: ' ada ', last_name: 'LOVELACE', url: 'ada.example.com' },
+        { name: 'Grace Hopper', url: 'javascript:alert(1)' },
+        { name: 'Jo Lee' },
+        { name: 'Unlinked', url: 'unlinked.example.com' },
+        {}
+    ] } }), people);
+    assert.deepEqual(founders, [
+        { name: 'ada LOVELACE', href: '/people/ada-lovelace', url: '' },
+        { name: 'Grace Hopper', href: '', url: '' },
+        { name: 'Jo Lee', href: '', url: '' },
+        { name: 'Unlinked', href: '', url: 'http://unlinked.example.com' },
+        { name: 'Unnamed founder', href: '', url: '' }
+    ]);
+    const html = await ejs.renderFile(path.join(__dirname, '..', 'views', 'organization.ejs'), {
+        organization: new Organization({ name: 'Acme', slug: 'acme' }), people: [], founders: [
+            { name: '<b>Ada</b>', href: '/people/ada-lovelace', url: '' }, { name: 'Bob', href: '', url: 'http://bob.example' }
+        ], socialIcons: {}, showProductUrls: false
+    });
+    assert.match(html, /Founders:/);
+    assert.match(html, /<a href="\/people\/ada-lovelace">&lt;b&gt;Ada&lt;\/b&gt;<\/a>/);
+    assert.match(html, /<a href="http:\/\/bob.example" target="acme">Bob<\/a>/);
+});
+
 test('person rendering escapes old/new position text and keeps as-of dates separate', async function (t) {
     t.mock.method(Organization, 'find', function () { return query([]); });
     const result = await publicPeople.personWithOrganizations({
