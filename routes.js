@@ -5,6 +5,7 @@ var Categories = JSON.parse(categoriesFile);
 
 var Organization = require('./models/organization');
 var Person = require("./models/person");
+var publicPeople = require('./lib/people');
 
 var express = require('express');
 var mongoose = require('mongoose');
@@ -135,6 +136,33 @@ router.get('/', function (req, res, next) {
     }).catch(next);
 });
 
+router.get('/people', async function (req, res, next) {
+    var page = req.query.page === undefined ? '1' : req.query.page;
+    if (typeof page !== 'string' || !/^[1-9]\d*$/.test(page) ||
+        !Number.isSafeInteger(Number(page)) || Number(page) > 1000000) {
+        return res.status(400).send('Invalid page');
+    }
+    page = Number(page);
+    try {
+        var people = await Person.find({}).select('-birthday')
+            .sort({ last_name: 1, first_name: 1, _id: 1 }).skip((page - 1) * 50).limit(51).lean().exec();
+        res.render('people', {
+            people: people.slice(0, 50).map(publicPeople.publicPerson),
+            page: page, hasNext: people.length > 50
+        });
+    } catch (error) { next(error); }
+});
+
+router.get('/people/:personSlug', async function (req, res, next) {
+    var slug = req.params.personSlug;
+    if (!slug.trim() || slug.length > 200) { return next(404); }
+    try {
+        var person = await Person.findOne({ slug: slug }).select('-birthday').lean().exec();
+        if (!person) { return next(404); }
+        res.render('person', { person: await publicPeople.personWithOrganizations(person) });
+    } catch (error) { next(error); }
+});
+
 router.get('/organization', function (req, res, next) {
     var re = String(req.query.term || "");
 
@@ -151,7 +179,7 @@ router.get('/organization', function (req, res, next) {
             if (organizations.length > 1) {
                 res.render("organizations", { organizations: organizations });
             } else if (organizations.length == 1) {
-                res.render("organization", { organization: organizations[0] });
+                return publicPeople.renderOrganization(req, res, organizations[0]);
             } else {
                 res.render("nonefound");
             }
@@ -188,13 +216,17 @@ router.get('/organizations', function (req, res, next) {
 
 });
 
-router.get("/organization/:orgSlug", function (req, res, next) {
-    var slug = getSlug(req.params.orgSlug);
+router.get("/organization/:orgSlug", async function (req, res, next) {
+    var slug = req.params.orgSlug;
     logger.info('/organization/' + slug);
-    Organization.findOne({ slug: slug }).exec().then(function (organization) {
+    try {
+        var organization = await Organization.findOne({ slug: slug }).exec();
+        if (!organization && getSlug(slug) !== slug) {
+            organization = await Organization.findOne({ slug: getSlug(slug) }).exec();
+        }
         if (!organization) { return next(404); }
-        res.render("organization", { organization: organization });
-    }).catch(next);
+        await publicPeople.renderOrganization(req, res, organization);
+    } catch (error) { next(error); }
 });
 
 router.get("/organization/product/category/:categorySlug", function (req, res, next) {
@@ -289,7 +321,7 @@ router.get("/standard/:standardSlug", function (req, res, next) {
     var slug = getSlug(req.params.standardSlug);
     Organization.findOne({ 'product.slug': slug }).exec().then(function (organization) {
         if (!organization) { return next(404); }
-        res.render("organization", { organization: organization });
+        return publicPeople.renderOrganization(req, res, organization);
     }).catch(next);
 });
 

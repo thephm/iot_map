@@ -1,4 +1,5 @@
 var mongoose = require("mongoose");
+var websiteUrl = require('../lib/website-url');
 
 var organizationSchema = mongoose.Schema({
   name: { type: String, required: true, unique: true },
@@ -13,6 +14,8 @@ var organizationSchema = mongoose.Schema({
     died_year: Number,
     founder: [{
       name: String,
+      first_name: String,
+      last_name: String,
       url: String
     }]
   },
@@ -87,14 +90,11 @@ var organizationSchema = mongoose.Schema({
 });
 
 organizationSchema.methods.getUrl = function() {
-  url = this.url;
-  if (!url.startsWith('http')) { url = 'http://' + url; }
-  return url;
+  return websiteUrl(this.url, 'http:');
 };
 
 organizationSchema.methods.checkUrl = function(url) {
-  if (!url.startsWith('http')) { url = 'http://' + url; }
-  return url;
+  return websiteUrl(url, 'http:');
 };
 
 organizationSchema.methods.getFirstLocation = function() {

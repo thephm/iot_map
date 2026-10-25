@@ -2,16 +2,21 @@
   <div class="container-fluid">
 
     <div class="navbar-header">
+      <% if (!locals.standaloneNavigation) { %>
       <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
+      <% } %>
       <a class="navbar-brand site-wordmark" href="/">IoT Map</a>
       <span class="database-environment" aria-label="MongoDB environment">MongoDB: <%= mongoEnvironment %></span>
     </div> <!-- navbar-header -->
 
-    <div class="collapse navbar-collapse">
+    <div class="collapse navbar-collapse<%= locals.standaloneNavigation ? ' in' : '' %>">
+      <ul class="nav navbar-nav">
+        <li><a href="/people">People</a></li>
+      </ul>
       <% if (locals.totals) { %>
       <div class="nav-totals" aria-label="Database totals">
         <% ['companies', 'people', 'products'].forEach(function (type) { %>
@@ -22,13 +27,15 @@
         <% }); %>
       </div>
       <% } %>
-      <% if (locals.showSearch) { %>
-      <form class="navbar-form navbar-right" role="search" id="nav-search-form">
+      <% if (locals.showSearch || locals.standaloneNavigation) { %>
+      <form class="navbar-form navbar-right" role="<%= locals.showSearch ? 'search' : 'presentation' %>" id="nav-search-form">
         <button type="button" class="theme-toggle" id="theme-toggle" role="switch" aria-checked="false" aria-label="Dark mode">
           <span class="theme-track" aria-hidden="true"></span>
           <span class="theme-label">Light</span>
         </button>
-        <input name="term" type="search" class="form-control" id="nav-search" placeholder="search term" autofocus>
+        <% if (locals.showSearch) { %>
+          <input name="term" type="search" class="form-control" id="nav-search" placeholder="search term" autofocus>
+        <% } %>
       </form>
       <% } %>
     </div> <!-- collapse navbar-collapse -->

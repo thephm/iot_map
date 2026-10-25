@@ -1,0 +1,38 @@
+<%- include('header'); -%>
+<%- include('navbar', { standaloneNavigation: true }); -%>
+<main class="container">
+  <p><a href="/people">People</a></p>
+  <h1><%= person.name %></h1>
+  <% if (person.title) { %><p><%= person.title %></p><% } %>
+  <% if (person.url) { %><p><a href="<%= person.url %>">Website</a></p><% } %>
+  <% if (person.socials.length) { %>
+    <ul aria-label="Social profiles">
+      <% person.socials.forEach(function (social) { %>
+        <li><a href="<%= social.url %>"><%= social.name %></a></li>
+      <% }); %>
+    </ul>
+  <% } %>
+  <% if (person.positions.length) { %>
+    <h2>Positions</h2>
+    <ul>
+      <% person.positions.forEach(function (position) { %>
+        <li>
+          <% if (position.title) { %><strong><%= position.title %></strong><% } %>
+          <% if (position.organization_href) { %>
+            <a href="<%= position.organization_href %>"><%= position.organization_name || position.company %></a>
+          <% } else { %><%= position.organization_name || position.company %><% } %>
+          <% if (position.company && position.organization_name && position.company !== position.organization_name) { %>
+            <span>(formerly recorded as <%= position.company %>)</span>
+          <% } %>
+          <% if (position.current) { %><span>Current position</span><% } %>
+          <% if (position.start_date) { %><span>Start: <%= position.start_date %></span><% } %>
+          <% if (position.end_date) { %><span>End: <%= position.end_date %></span><% } %>
+          <% if (position.date) { %><span>As of: <%= position.date %></span><% } %>
+          <% if (position.location) { %><span><%= position.location %></span><% } %>
+        </li>
+      <% }); %>
+    </ul>
+  <% } %>
+</main>
+</body>
+</html>

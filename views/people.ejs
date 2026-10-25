@@ -1,0 +1,21 @@
+<%- include('header'); -%>
+<%- include('navbar', { standaloneNavigation: true }); -%>
+<main class="container">
+  <h1>People</h1>
+  <% if (!people.length) { %><p>No people found.</p><% } %>
+  <ul>
+    <% people.forEach(function (person) { %>
+      <li>
+        <% if (person.href) { %><a href="<%= person.href %>"><%= person.name %></a>
+        <% } else { %><%= person.name %><% } %>
+        <% if (person.title) { %> &mdash; <%= person.title %><% } %>
+      </li>
+    <% }); %>
+  </ul>
+  <nav aria-label="People pages">
+    <% if (page > 1) { %><a href="/people?page=<%= page - 1 %>">Previous</a><% } %>
+    <% if (hasNext) { %><a href="/people?page=<%= page + 1 %>">Next</a><% } %>
+  </nav>
+</main>
+</body>
+</html>

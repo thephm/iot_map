@@ -24,6 +24,33 @@ No external icon font, CDN, or React runtime is needed for these icons.
 Links retain accessible names and tooltips; legacy GooglePlus links use the Google icon, and unrecognized services retain text labels.
 Empty social URLs are omitted.
 
+## People and admin migration compatibility
+
+`/people` lists people in pages of 50, with public detail pages at `/people/:slug`.
+People without a slug remain readable in the list but are not given invented links.
+Person pages display titles, websites, social profiles, and both legacy and migrated
+positions. Legacy `company` and `date` remain readable: `date` is labeled **As of**,
+never treated as a start/end date or evidence of current employment.
+
+Position organization links resolve the durable `organization_id` to the organization's
+current slug. Stored position slugs and company-name guesses are not used for navigation.
+Deleted organizations render as plain text, not broken links. Organization detail
+responses (including search and standard lookup) include people whose positions reference
+that organization ID, with links back to people that have slugs. Embedded founders support
+both legacy `name` and new `first_name`/`last_name` values.
+Direct organization visits render a full page; map AJAX requests retain their HTML fragments.
+
+Birthday is excluded explicitly from every public person document query and by default
+in the model. Public render data uses an allowlist, including nested positions, so unknown
+fields and birthdays are not passed to templates. This is a read-only compatibility
+change: it does not run migrations, create indexes, or update the database.
+
+Deploy this public-app change **before** applying people/founder migrations from
+`iot_map_admin`. Run `npm test`, verify person and organization pages against a backed-up
+local copy containing old and new positions, deploy, and smoke-test the same routes on the
+live service. A local passing test does not prove a production deployment has happened.
+Only then approve production data migration, after taking and validating a backup.
+
 ## Setup
 
 ### Configuration

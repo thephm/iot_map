@@ -46,6 +46,15 @@ test('public app starts without session credentials and serves read-only routes'
     });
     t.mock.method(Organization, 'countDocuments', async function () { return 1; });
     t.mock.method(Person, 'countDocuments', async function () { return 2; });
+    t.mock.method(Person, 'find', function () {
+        const query = {
+            select: function () { return query; },
+            sort: function () { return query; },
+            lean: function () { return query; },
+            exec: async function () { return []; }
+        };
+        return query;
+    });
     t.mock.method(Organization, 'aggregate', async function (pipeline) {
         return pipeline[0].$unwind ? [] : [{ count: 1 }];
     });

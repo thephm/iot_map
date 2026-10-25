@@ -24,8 +24,9 @@
 <% for (i=0; i < organization.history.founder.length; i++) {
   founder = organization.history.founder[ i ]; %>
   <% if (i) { %>, <% } %>
-  <% if (founder.url) { %><a href="<%= organization.checkUrl(founder.url) %>" target="<%= organization.slug %>"><% } %>
-    <%= founder.name %><% if (founder.url) { %></a><% } %>
+  <% var founderUrl = organization.checkUrl(founder.url); %>
+  <% if (founderUrl) { %><a href="<%= founderUrl %>" target="<%= organization.slug %>"><% } %>
+    <%= [founder.first_name, founder.last_name].filter(Boolean).join(' ') || founder.name || 'Unnamed founder' %><% if (founderUrl) { %></a><% } %>
 <% } %>
 <!--
 <% if (organization.post.length) { %><p>Posted:<% } %>
@@ -73,6 +74,30 @@ if (email) {%><p>email: <a href="mailto:<%= email %>"><%= email %></a></p><% } %
 <% address = organization.getFirstLocation();
 if (address) { %><p>Address: <%= address %></p><% } %>
 
+<% if (locals.people && people.length) { %>
+  <section aria-label="People at this organization">
+    <h2>People</h2>
+    <ul>
+      <% people.forEach(function (person) { %>
+        <li>
+          <% if (person.href) { %><a href="<%= person.href %>"><%= person.name %></a>
+          <% } else { %><%= person.name %><% } %>
+          <ul>
+            <% person.positions.forEach(function (position) { %>
+              <li>
+                <%= position.title %>
+                <% if (position.current) { %> &mdash; Current position<% } %>
+                <% if (position.start_date) { %> &mdash; Start: <%= position.start_date %><% } %>
+                <% if (position.end_date) { %> &mdash; End: <%= position.end_date %><% } %>
+                <% if (position.date) { %> &mdash; As of: <%= position.date %><% } %>
+              </li>
+            <% }); %>
+          </ul>
+        </li>
+      <% }); %>
+    </ul>
+  </section>
+<% } %>
 </div>
 
 <div class="org-products"><%- include('product'); -%></div>
