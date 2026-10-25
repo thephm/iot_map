@@ -778,28 +778,10 @@ window.onload = function() {
         }
 
         /**
-         * Load a specific integration
+         * Load the organization behind a standard or integration, so the
+         * company details and its products change together
          *
-         * @param str slug short RESTful tag for the integration
-         * @return null
-         */
-        function loadIntegration(slug) {
-            url = '/product/' + slug;
-            $.ajax({
-                type: 'GET',
-                url: url,
-                cache: false,
-                error: function() { console.log('could not load the organization'); },
-                success: function(data) {
-                    showProducts(data);
-                }
-            });
-        }
-
-        /**
-         * Load the organization behind a standard
-         *
-         * @param str slug short RESTful tag for the standard
+         * @param str slug short RESTful tag for the standard or integration
          * @return null
          */
         function clickedStandard(slug) {
@@ -845,8 +827,7 @@ window.onload = function() {
             event.preventDefault();
             if (action === 'pin') clickedPin(slug);
             else if (action === 'product') loadProduct(slug);
-            else if (action === 'integration') loadIntegration(slug);
-            else if (action === 'standard') clickedStandard(slug);
+            else if (action === 'integration' || action === 'standard') clickedStandard(slug);
         });
         $(document).on('click', '.organization-panel', function(event) {
             if ($(event.target).closest('[data-action]').length) return;
