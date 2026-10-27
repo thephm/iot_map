@@ -34,8 +34,8 @@
       <p>Features:
         <% for (a=0; a < product.feature.length; a++) {
           if (a) {%>, <% } %>
-          <%= product.feature[ a ] %>
-        <% } %>
+          <%= product.feature[ a ] -%>
+        <%_ } %>
       </p>
     <%} %>
 
@@ -43,8 +43,8 @@
       <p>Protocol:
         <% for (z=0; z < product.protocol.length; z++) {
           if (z) {%>, <% } %>
-          <%= product.protocol[ z ] %>
-        <% } %>
+          <%= product.protocol[ z ] -%>
+        <%_ } %>
       </p>
     <%} %>
 
@@ -52,8 +52,8 @@
       <p>Encryption:
         <% for (e=0; e < product.encryption.length; e++) {
           if (e) {%>, <% } %>
-          <%= product.encryption[ e ] %>
-        <% } %>
+          <%= product.encryption[ e ] -%>
+        <%_ } %>
       </p>
     <%} %>
 
@@ -61,8 +61,8 @@
       <p>Authentication:
         <% for (z=0; z < product.authentication.length; z++) {
           if (z) {%>, <% } %>
-          <%= product.authentication[ z ] %>
-        <% } %>
+          <%= product.authentication[ z ] -%>
+        <%_ } %>
       </p>
     <%} %>
 
@@ -70,8 +70,8 @@
       <p>Software language:
         <% for (s=0; s < product.software_language.length; s++) {
           if (s) {%>, <% } %>
-          <%= product.software_language[ s ] %>
-        <% } %>
+          <%= product.software_language[ s ] -%>
+        <%_ } %>
       </p>
     <%} %>
 
@@ -79,8 +79,8 @@
       <p>Applications:
         <% for (a=0; a < product.application.length; a++) {
           if (a) {%>, <% } %>
-          <%= product.application[ a ] %>
-        <% } %>
+          <%= product.application[ a ] -%>
+        <%_ } %>
       </p>
     <%} %>
 
@@ -88,8 +88,8 @@
       <p>Notifications:
         <% for (a=0; a < product.notification.length; a++) {
           if (a) {%>, <% } %>
-          <%= product.notification[ a ] %>
-        <% } %>
+          <%= product.notification[ a ] -%>
+        <%_ } %>
       </p>
     <%} %>
 
@@ -97,8 +97,8 @@
       <p>Operating system:
         <% for (os=0; os < product.operating_system.length; os++) {
           if (os) {%>, <% } %>
-          <%= product.operating_system[ os ] %>
-        <% } %>
+          <%= product.operating_system[ os ] -%>
+        <%_ } %>
       </p>
     <%} %>
 
@@ -108,8 +108,8 @@
         <% for (k=0; k < hardwarePlatforms.length; k++) {
           platform = hardwarePlatforms[ k ];
           if (k) {%>, <% } %>
-          <%= platform.name %>
-        <% } %>
+          <%= platform.name -%>
+        <%_ } %>
       </p>
     <%} %>
 
@@ -118,8 +118,8 @@
       <p>Wireless:
         <% for (w=0; w < wireless.length; w++) {
           if (w) {%>, <%} %>
-          <%= wireless[ w ] %>
-        <% } %>
+          <%= wireless[ w ] -%>
+        <%_ } %>
       </p>
     <%} %>
 
@@ -128,8 +128,8 @@
       <p>Wi-Fi Chipset:
         <% for (p=0; p < wifi_chip.length; p++) {
           if (p) {%>, <%} %>
-          <%= wifi_chip[ p ] %>
-        <% } %>
+          <%= wifi_chip[ p ] -%>
+        <%_ } %>
       </p>
     <%} %>
 
@@ -139,8 +139,8 @@
         <% for (d=0; d < wired.length; d++) {
           if (d) {%>, <%}
           interface = wired[ d ]; %>
-          <%= interface %>
-        <% } %>
+          <%= interface -%>
+        <%_ } %>
       </p>
     <%} %>
 
@@ -150,8 +150,8 @@
         <% for (l=0; l < locations.length; l++) {
           if (l) {%>, <%}
           location = locations[ l ]; %>
-          <%= location %>
-        <% } %>
+          <%= location -%>
+        <%_ } %>
       </p>
     <%} %>
 
@@ -163,9 +163,9 @@
           if (product.standard[ s ].slug) {%>
             <a href="#" data-action="standard" data-slug="<%= product.standard[ s ].slug %>">
           <%}%>
-          <%= standards[ s ].name %>
-          <%if (product.standard[ s ].slug) {%></a><%}%>
-        <% } %>
+          <%= standards[ s ].name -%>
+          <%_ if (product.standard[ s ].slug) {%></a><% } -%>
+        <%_ } %>
       </p>
     <%} %>
 
@@ -176,9 +176,9 @@
           if (product.integration[ y ].slug) {%>
             <a href="#" data-action="integration" data-slug="<%= product.integration[ y ].slug %>">
           <%}%>
-          <%= product.integration[ y ].name %>
-          <%if (product.integration[ y ].slug) {%></a><%}%>
-        <% } %>
+          <%= product.integration[ y ].name -%>
+          <%_ if (product.integration[ y ].slug) {%></a><% } -%>
+        <%_ } %>
       </p>
     <%} %>
 

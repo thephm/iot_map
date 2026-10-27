@@ -184,6 +184,28 @@ test('the People navbar link is hidden unless enabled (it is off in production)'
     assert.match(await ejs.renderFile(navbar, { showPeopleNav: true }), /href="\/people">People</);
 });
 
+test('product lists put commas directly after each item, with no space before them', async function () {
+    const organization = new Organization({
+        name: 'Acme', slug: 'acme',
+        product: [{
+            name: 'Hub', slug: 'hub', feature: ['Scenes', 'Voice'], protocol: ['MQTT', 'HTTP'],
+            wireless_interface: ['Wi-Fi', 'Zigbee'], hardware_platform: [{ name: 'Pi', slug: 'pi' }, { name: 'Arduino', slug: '' }],
+            standard: [{ name: 'Thread', slug: 'thread' }, { name: 'Matter', slug: '' }],
+            integration: [{ name: 'Automatic', slug: 'automatic' }, { name: 'Alexa', slug: '' }, { name: 'Echo', slug: 'echo' }]
+        }]
+    });
+    const html = await ejs.renderFile(path.join(__dirname, '..', 'views', 'product.ejs'), {
+        organization: organization, showProductUrls: false
+    });
+    const text = html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ');
+    assert.doesNotMatch(text, / ,/);
+    for (const list of ['Features: Scenes, Voice', 'Protocol: MQTT, HTTP', 'Wireless: Wi-Fi, Zigbee',
+        'Hardware platforms: Pi, Arduino', 'Standards: Thread, Matter', 'Integrations: Automatic, Alexa, Echo']) {
+        assert.ok(text.includes(list), list);
+    }
+    assert.match(html, /data-slug="automatic">\s*Automatic<\/a>,\s+Alexa,\s+<a /);
+});
+
 test('person rendering escapes old/new position text and keeps as-of dates separate', async function (t) {
     t.mock.method(Organization, 'find', function () { return query([]); });
     const result = await publicPeople.personWithOrganizations({
