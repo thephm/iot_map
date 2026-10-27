@@ -41,6 +41,13 @@ both legacy `name` and new `first_name`/`last_name` values. After `migrate-found
 links to their person page when exactly one person listed for the organization has the same
 name (normalized for case and whitespace) and a position titled with "founder"; otherwise the
 founder's stored URL, if any, is kept.
+
+Organizations have an `iot_organization` flag. A missing flag counts as IoT, because every
+organization added before the flag is an IoT organization. Organizations flagged `false`
+(typically employers of friends of IoT Map) are excluded from the map, search, organization
+lists, category counts and homepage totals. Their own page still opens from people's positions,
+with a "Not listed on the IoT map" note. Queries use `mongoose.trusted` for the `$ne`, because
+`sanitizeFilter` is on.
 Direct organization visits render a full page; map AJAX requests retain their HTML fragments.
 
 Birthday is excluded explicitly from every public person document query and by default

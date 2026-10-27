@@ -1,5 +1,6 @@
 <div class="organization-details">
 <h1><%= organization.name %></h1>
+<% if (organization.iot_organization === false) { %><p class="non-iot-note">Not listed on the IoT map.</p><% } %>
 <%- include('organization-types'); -%>
 <% if (typeof(organization.location) != "undefined") { %>
   <% if (typeof(organization.location[0]) != "undefined") { %>

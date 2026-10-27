@@ -122,11 +122,21 @@ function getGeoJSON(organizations) {
 
 // ------------------------------------------------------------------
 
+/**
+ * Organizations shown on the map, in search, in lists and in totals. Organizations without the
+ * flag predate it and are all IoT organizations; false marks a non-IoT organization that exists
+ * only so people's positions can link to it.
+ */
+function iotOnly(filter) {
+    return { ...filter, iot_organization: mongoose.trusted({ $ne: false }) };
+}
+
 router.get('/', function (req, res, next) {
     Promise.all([
-        Organization.countDocuments({}),
+        Organization.countDocuments(iotOnly({})),
         Person.countDocuments({}),
         Organization.aggregate([
+            { $match: { iot_organization: { $ne: false } } },
             { $group: { _id: null, count: { $sum: { $size: { $ifNull: ['$product', []] } } } } }
         ])
     ]).then(function ([companies, people, products]) {
@@ -166,13 +176,13 @@ router.get('/people/:personSlug', async function (req, res, next) {
 router.get('/organization', function (req, res, next) {
     var re = String(req.query.term || "");
 
-    Organization.find({
+    Organization.find(iotOnly({
         $or:
             [{ 'slug': mongoose.trusted({ $regex: re, $options: 'i' }) },
             { 'product.slug': mongoose.trusted({ $regex: re, $options: 'i' }) },
             { 'product.description': mongoose.trusted({ $regex: re, $options: 'i' }) }
             ]
-    })
+    }))
         .sort({ 'name': 1 })
         .exec()
         .then(function (organizations) {
@@ -191,13 +201,13 @@ router.get('/organization', function (req, res, next) {
 router.get("/map/organization", function (req, res, next) {
     var re = String(req.query.term || "");
 
-    Organization.find({
+    Organization.find(iotOnly({
         $or:
             [{ 'slug': mongoose.trusted({ $regex: re, $options: 'i' }) },
             { 'product.slug': mongoose.trusted({ $regex: re, $options: 'i' }) },
             { 'product.description': mongoose.trusted({ $regex: re, $options: 'i' }) }
             ]
-    })
+    }))
         .exec()
         .then(function (organizations) {
             res.type("json").send(getGeoJSON(organizations));
@@ -207,7 +217,7 @@ router.get("/map/organization", function (req, res, next) {
 
 router.get('/organizations', function (req, res, next) {
 
-    Organization.find({ 'location.address.country': 'Canada' })
+    Organization.find(iotOnly({ 'location.address.country': 'Canada' }))
         .exec()
         .then(function (organizations) {
             res.render("organizations", { organizations: organizations });
@@ -232,7 +242,7 @@ router.get("/organization/:orgSlug", async function (req, res, next) {
 router.get("/organization/product/category/:categorySlug", function (req, res, next) {
     var slug = getSlug(req.params.categorySlug);
 
-    Organization.find({ 'product.primary_category_slug': slug })
+    Organization.find(iotOnly({ 'product.primary_category_slug': slug }))
         .sort({ 'name': 1 })
         .exec()
         .then(function (organizations) {
@@ -248,11 +258,11 @@ router.get("/organization/product/category/:categorySlug/subcategory/:subCategor
     var categorySlug = getSlug(req.params.categorySlug);
     var subCategorySlug = getSlug(req.params.subCategorySlug);
 
-    Organization.find({
+    Organization.find(iotOnly({
         product: mongoose.trusted({
             $elemMatch: { primary_category_slug: categorySlug, secondary_category_slug: subCategorySlug }
         })
-    })
+    }))
         .sort({ 'name': 1 })
         .exec()
         .then(organizations => {
@@ -266,6 +276,7 @@ router.get("/organization/product/category/:categorySlug/subcategory/:subCategor
 
 async function getCategoriesWithCounts() {
     var rows = await Organization.aggregate([
+        { $match: { iot_organization: { $ne: false } } },
         { $unwind: '$product' },
         { $group: {
             _id: { category: '$product.primary_category_slug', organization: '$_id' },
@@ -332,11 +343,11 @@ router.get("/standard/:standardSlug", function (req, res, next) {
 router.get("/map/product/category/:categorySlug/subcategory/:subCategorySlug", function (req, res, next) {
     var categorySlug = getSlug(req.params.categorySlug);
     var subCategorySlug = getSlug(req.params.subCategorySlug);
-    Organization.find({
+    Organization.find(iotOnly({
         product: mongoose.trusted({
             $elemMatch: { primary_category_slug: categorySlug, secondary_category_slug: subCategorySlug }
         })
-    })
+    }))
         .exec()
         .then(function (organizations) {
             res.type("json").send(getGeoJSON(organizations));

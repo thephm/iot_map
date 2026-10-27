@@ -5,6 +5,8 @@ var organizationSchema = mongoose.Schema({
   name: { type: String, required: true, unique: true },
   slug: { type: String, required: true, unique: true },
   url: String,
+  // Missing means IoT; false marks a friend's employer that is not on the map.
+  iot_organization: Boolean,
   date_added: Date,
   description: String,
   history: {

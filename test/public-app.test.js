@@ -55,13 +55,16 @@ test('public app starts without session credentials and serves read-only routes'
         };
         return query;
     });
+    const organizationFilters = [];
     t.mock.method(Organization, 'aggregate', async function (pipeline) {
-        return pipeline[0].$unwind ? [] : [{ count: 1 }];
+        assert.deepEqual(pipeline[0], { $match: { iot_organization: { $ne: false } } });
+        return pipeline.some(function (stage) { return stage.$unwind; }) ? [] : [{ count: 1 }];
     });
     t.mock.method(Organization, 'findOne', function () {
         return { exec: async function () { return organization; } };
     });
-    t.mock.method(Organization, 'find', function () {
+    t.mock.method(Organization, 'find', function (filter) {
+        organizationFilters.push(filter);
         const query = {
             sort: function () { return query; },
             exec: async function () { return [organization]; }
@@ -231,6 +234,7 @@ test('public app starts without session credentials and serves read-only routes'
     });
 
     await t.test('search, map and category endpoints remain accessible without sessions', async function () {
+        organizationFilters.length = 0;
         for (const endpoint of [
             '/organization?term=example',
             '/organizations',
@@ -251,6 +255,11 @@ test('public app starts without session credentials and serves read-only routes'
             } else {
                 await response.text();
             }
+        }
+        // Every listing, search and map query excludes organizations flagged as not IoT.
+        assert.equal(organizationFilters.length, 5);
+        for (const filter of organizationFilters) {
+            assert.equal(filter.iot_organization.$ne, false);
         }
     });
 });
