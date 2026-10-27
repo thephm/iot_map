@@ -6,6 +6,7 @@ var Categories = JSON.parse(categoriesFile);
 var Organization = require('./models/organization');
 var Person = require("./models/person");
 var publicPeople = require('./lib/people');
+var transliterate = require('./lib/transliterate');
 
 var express = require('express');
 var mongoose = require('mongoose');
@@ -71,7 +72,8 @@ if (process.env.NODE_ENV !== 'production') {
  */
 function getSlug(value) {
 
-    var slug = value.toLowerCase();
+    // Accented letters become ASCII, matching how iot_map_admin generates slugs.
+    var slug = transliterate(value).toLowerCase();
     slug = slug.replace(".", "-");
     slug = slug.replace("&", "-");
     slug = slug.replace("(", "-");

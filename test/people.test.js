@@ -289,4 +289,11 @@ test('public people routes and every organization detail entry point are compati
         assert.equal(response.status, 200);
         assert.deepEqual(organizationLookups.at(-1), { slug: 'current.co' });
     });
+    await t.test('typed organization URLs with accents fall back to the transliterated slug', async function () {
+        organizationLookups.length = 0;
+        orgResult = null;
+        assert.equal((await fetch(base + '/organization/' + encodeURIComponent('Société Générale'))).status, 404);
+        assert.deepEqual(organizationLookups, [{ slug: 'Société Générale' }, { slug: 'societe-generale' }]);
+        orgResult = organization;
+    });
 });
