@@ -166,6 +166,13 @@ test('only public comments are loaded, with text and date but never the author',
     assert.doesNotMatch(JSON.stringify([comments, byProduct]), /admin@example.com/);
 });
 
+test('the People navbar link is hidden unless enabled (it is off in production)', async function () {
+    const navbar = path.join(__dirname, '..', 'views', 'navbar.ejs');
+    assert.doesNotMatch(await ejs.renderFile(navbar, {}), /href="\/people"/);
+    assert.doesNotMatch(await ejs.renderFile(navbar, { showPeopleNav: false }), /href="\/people"/);
+    assert.match(await ejs.renderFile(navbar, { showPeopleNav: true }), /href="\/people">People</);
+});
+
 test('person rendering escapes old/new position text and keeps as-of dates separate', async function (t) {
     t.mock.method(Organization, 'find', function () { return query([]); });
     const result = await publicPeople.personWithOrganizations({

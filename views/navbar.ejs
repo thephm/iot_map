@@ -16,9 +16,11 @@
     </div> <!-- navbar-header -->
 
     <div class="collapse navbar-collapse<%= locals.standaloneNavigation ? ' in' : '' %>">
+      <% if (locals.showPeopleNav) { %>
       <ul class="nav navbar-nav">
         <li><a href="/people">People</a></li>
       </ul>
+      <% } %>
       <% if (locals.totals) { %>
       <div class="nav-totals" aria-label="Database totals">
         <% ['companies', 'people', 'products'].forEach(function (type) { %>
