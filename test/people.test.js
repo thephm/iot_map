@@ -70,6 +70,17 @@ test('public person shape excludes birthdays and unknown fields even when a quer
     assert.equal(publicPeople.publicPerson({ _id: personId }).href, '');
 });
 
+test('social links use stored profile URLs and fall back to older IDs', function () {
+    const value = publicPeople.publicPerson({
+        _id: personId, linkedin_url: 'https://www.linkedin.com/in/jo-smith', linkedin_id: 'stale',
+        x_id: 'jo', github_url: 'javascript:alert(1)'
+    });
+    assert.deepEqual(value.socials, [
+        { name: 'LinkedIn', url: 'https://www.linkedin.com/in/jo-smith' },
+        { name: 'X', url: 'https://x.com/jo' }
+    ]);
+});
+
 test('website and social URLs never turn untrusted values into executable links', function () {
     for (const value of ['javascript:alert(1)', 'data:text/html,hello', 'ftp://example.com', 'https://user:password@example.com', null, {}]) {
         assert.equal(websiteUrl(value), '');

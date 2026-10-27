@@ -32,6 +32,10 @@ Person pages display titles, websites, social profiles, and both legacy and migr
 positions. Legacy `company` and `date` remain readable: `date` is labeled **As of**,
 never treated as a start/end date or evidence of current employment.
 
+Social profile links come from the person's `<service>_url` fields (full profile URLs written by
+iot_map_admin). For people not yet converted by `migrate-social-urls`, the older `<service>_id`
+fields are still turned into links with each service's profile prefix.
+
 Position organization links resolve the durable `organization_id` to the organization's
 current slug. Stored position slugs and company-name guesses are not used for navigation.
 Deleted organizations render as plain text, not broken links. Organization detail
