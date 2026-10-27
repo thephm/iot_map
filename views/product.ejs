@@ -182,5 +182,9 @@
       </p>
     <%} %>
 
+    <%- include('_comments', {
+      comments: locals.productComments ? productComments[String(product._id)] : [],
+      heading: 'Comments', level: 'h4'
+    }); -%>
   </div>
 <% } %>

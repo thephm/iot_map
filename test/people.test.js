@@ -8,6 +8,8 @@ const mongoose = require('mongoose');
 const Person = require('../models/person');
 const Organization = require('../models/organization');
 const publicPeople = require('../lib/people');
+const Comment = require('../models/comment');
+const publicComments = require('../lib/comments');
 const websiteUrl = require('../lib/website-url');
 
 const orgId = new mongoose.Types.ObjectId();
@@ -144,6 +146,26 @@ test('embedded founders link to a unique matching Founder person and otherwise k
     assert.match(html, /<a href="http:\/\/bob.example" target="acme">Bob<\/a>/);
 });
 
+test('only public comments are loaded, with text and date but never the author', async function (t) {
+    const productId = new mongoose.Types.ObjectId();
+    const filters = [];
+    t.mock.method(Comment, 'find', function (filter) {
+        filters.push(filter);
+        return query([
+            { text: 'Shown <b>escaped</b>', created_at: new Date('2026-10-27T10:00:00Z'), created_by: { email: 'admin@example.com' },
+                entity: { product_id: productId } },
+            { text: '', created_at: new Date() }
+        ], function (fields) { assert.equal(fields, 'text created_at entity.product_id'); });
+    });
+    const comments = await publicComments.forEntity('person', personId);
+    assert.deepEqual(comments, [{ text: 'Shown <b>escaped</b>', date: '2026-10-27' }]);
+    assert.deepEqual(filters[0], { 'entity.type': 'person', 'entity.id': personId, public: true });
+    const byProduct = await publicComments.forProducts(orgId);
+    assert.deepEqual(filters[1], { 'entity.type': 'product', 'entity.id': orgId, public: true });
+    assert.deepEqual(Object.keys(byProduct), [String(productId)]);
+    assert.doesNotMatch(JSON.stringify([comments, byProduct]), /admin@example.com/);
+});
+
 test('person rendering escapes old/new position text and keeps as-of dates separate', async function (t) {
     t.mock.method(Organization, 'find', function () { return query([]); });
     const result = await publicPeople.personWithOrganizations({
@@ -176,6 +198,12 @@ test('public people routes and every organization detail entry point are compati
     let capturedPerson;
     const organizationLookups = [];
     const projections = [];
+    t.mock.method(Comment, 'find', function (filter) {
+        assert.equal(filter.public, true);
+        return query(filter['entity.type'] === 'product' ? [] : [
+            { text: 'Public note on ' + filter['entity.type'], created_at: new Date('2026-10-27T00:00:00Z') }
+        ]);
+    });
     t.mock.method(Person, 'find', function (filter) {
         if (filter['positions.organization_id'] && linkedError) { throw new Error('People query failed'); }
         return query(listResult, function (fields) { projections.push(fields); });
@@ -232,6 +260,7 @@ test('public people routes and every organization detail entry point are compati
         assert.match(html, /Deleted Co/);
         assert.match(html, /As of: 5-Mar-2018/);
         assert.match(html, /Current position/);
+        assert.match(html, /Public note on person/);
         assert.doesNotMatch(html, /stale-slug|deleted-org|unsafe-stale|birthday|1978-03-05/);
         assert.doesNotMatch(JSON.stringify(capturedPerson), /birthday|private/);
     });
@@ -245,6 +274,7 @@ test('public people routes and every organization detail entry point are compati
             assert.match(html, /Legacy Founder/);
             assert.match(html, /New Founder/);
             assert.match(html, /&lt;script&gt;old&lt;\/script&gt;/);
+            assert.match(html, /Public note on organization/);
             assert.doesNotMatch(html, /javascript:|birthday|1978-03-05|Unresolved Co/);
         }
         assert.ok(projections.length > 0);

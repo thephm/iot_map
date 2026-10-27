@@ -78,6 +78,8 @@ if (email) {%><p>email: <a href="mailto:<%= email %>"><%= email %></a></p><% } %
 <% address = organization.getFirstLocation();
 if (address) { %><p>Address: <%= address %></p><% } %>
 
+<%- include('_comments', { comments: locals.comments, heading: 'Comments', level: 'h2' }); -%>
+
 <% if (locals.people && people.length) { %>
   <section aria-label="People at this organization">
     <h2>People</h2>

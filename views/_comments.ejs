@@ -1,0 +1,13 @@
+<% if (comments && comments.length) { %>
+  <section class="public-comments" aria-label="<%= heading %>">
+    <<%= level %>><%= heading %></<%= level %>>
+    <ul>
+      <% comments.forEach(function (comment) { %>
+        <li>
+          <p class="public-comment-text"><%= comment.text %></p>
+          <% if (comment.date) { %><time datetime="<%= comment.date %>"><%= comment.date %></time><% } %>
+        </li>
+      <% }); %>
+    </ul>
+  </section>
+<% } %>

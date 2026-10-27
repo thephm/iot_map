@@ -101,3 +101,22 @@ html[data-theme="dark"] .gm-style-iw-c {
     #nav-search-form { gap: 8px; }
     #nav-search-form #nav-search { width: 120px; }
 }
+
+.public-comments ul {
+  padding-left: 0;
+  list-style: none;
+}
+
+.public-comments li {
+  margin-bottom: 0.75rem;
+}
+
+.public-comment-text {
+  margin-bottom: 0.15rem;
+  white-space: pre-wrap;
+}
+
+.public-comments time {
+  font-size: 0.85em;
+  opacity: 0.75;
+}

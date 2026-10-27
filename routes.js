@@ -7,6 +7,7 @@ var Organization = require('./models/organization');
 var Person = require("./models/person");
 var publicPeople = require('./lib/people');
 var transliterate = require('./lib/transliterate');
+var publicComments = require('./lib/comments');
 
 var express = require('express');
 var mongoose = require('mongoose');
@@ -171,7 +172,10 @@ router.get('/people/:personSlug', async function (req, res, next) {
     try {
         var person = await Person.findOne({ slug: slug }).select('-birthday').lean().exec();
         if (!person) { return next(404); }
-        res.render('person', { person: await publicPeople.personWithOrganizations(person) });
+        res.render('person', {
+            person: await publicPeople.personWithOrganizations(person),
+            comments: await publicComments.forEntity('person', person._id)
+        });
     } catch (error) { next(error); }
 });
 

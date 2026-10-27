@@ -48,6 +48,10 @@ organization added before the flag is an IoT organization. Organizations flagged
 lists, category counts and homepage totals. Their own page still opens from people's positions,
 with a "Not listed on the IoT map" note. Queries use `mongoose.trusted` for the `$ne`, because
 `sanitizeFilter` is on.
+
+Comments are written in iot_map_admin and stored in the `comments` collection. This app reads
+only comments with `public: true` and shows their text and date (never the author) on person
+pages, organization pages and under each product. Private comments are never queried.
 Direct organization visits render a full page; map AJAX requests retain their HTML fragments.
 
 Birthday is excluded explicitly from every public person document query and by default

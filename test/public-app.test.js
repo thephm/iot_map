@@ -9,6 +9,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const Organization = require('../models/organization');
 const Person = require('../models/person');
+const Comment = require('../models/comment');
 
 test('public app starts without session credentials and serves read-only routes', async function (t) {
     const root = path.resolve(__dirname, '..');
@@ -56,6 +57,15 @@ test('public app starts without session credentials and serves read-only routes'
         return query;
     });
     const organizationFilters = [];
+    t.mock.method(Comment, 'find', function () {
+        const query = {
+            select: function () { return query; },
+            sort: function () { return query; },
+            lean: function () { return query; },
+            exec: async function () { return []; }
+        };
+        return query;
+    });
     t.mock.method(Organization, 'aggregate', async function (pipeline) {
         assert.deepEqual(pipeline[0], { $match: { iot_organization: { $ne: false } } });
         return pipeline.some(function (stage) { return stage.$unwind; }) ? [] : [{ count: 1 }];
