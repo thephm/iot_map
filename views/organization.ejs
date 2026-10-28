@@ -85,21 +85,15 @@ if (address) { %><p>Address: <%= address %></p><% } %>
     <h2>People</h2>
     <ul>
       <% people.forEach(function (person) { %>
-        <li>
-          <% if (person.href) { %><a href="<%= person.href %>"><%= person.name %></a>
-          <% } else { %><%= person.name %><% } %>
-          <ul>
-            <% person.positions.forEach(function (position) { %>
-              <li>
-                <%= position.title %>
-                <% if (position.current) { %> &mdash; Current position<% } %>
-                <% if (position.start_date) { %> &mdash; Start: <%= position.start_date %><% } %>
-                <% if (position.end_date) { %> &mdash; End: <%= position.end_date %><% } %>
-                <% if (position.date) { %> &mdash; As of: <%= position.date %><% } %>
-              </li>
-            <% }); %>
-          </ul>
-        </li>
+        <% person.positions.forEach(function (position) {
+          var end = position.end_date || (position.current ? 'present' : '');
+          var when = position.start_date && end ? position.start_date + ' to ' + end
+            : position.start_date ? 'from ' + position.start_date
+            : position.end_date ? 'until ' + position.end_date
+            : position.current ? 'current' : '';
+          var details = [position.title, when, position.date ? 'as of ' + position.date : ''].filter(Boolean); %>
+          <li><% if (person.href) { %><a href="<%= person.href %>"><%= person.name %></a><% } else { %><%= person.name %><% } %><% details.forEach(function (detail) { %>, <%= detail %><% }); %></li>
+        <% }); %>
       <% }); %>
     </ul>
   </section>

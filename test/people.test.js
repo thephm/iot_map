@@ -157,6 +157,25 @@ test('embedded founders link to a unique matching Founder person and otherwise k
     assert.match(html, /<a href="http:\/\/bob.example" target="acme">Bob<\/a>/);
 });
 
+test('organization people are one line per position with name, title and dates', async function () {
+    const html = await ejs.renderFile(path.join(__dirname, '..', 'views', 'organization.ejs'), {
+        organization: new Organization({ name: 'Acme', slug: 'acme' }), founders: [], socialIcons: {}, showProductUrls: false,
+        people: [
+            { name: 'Mark Lapins', href: '/people/mark-lapins', positions: [{ title: 'Director', start_date: '2013-12', end_date: '2020-03' }] },
+            { name: 'Aidan Montague', href: '', positions: [{ title: 'Chairman', date: '2017-02-20' }] },
+            { name: 'Jo Lee', href: '', positions: [{ title: 'CEO', start_date: '2019', current: true }, { title: '<b>CTO</b>', current: true }] }
+        ]
+    });
+    const section = html.slice(html.indexOf('<h2>People</h2>'));
+    const items = [...section.matchAll(/<li>(.*?)<\/li>/g)].map((match) => match[1]);
+    assert.deepEqual(items, [
+        '<a href="/people/mark-lapins">Mark Lapins</a>, Director, 2013-12 to 2020-03',
+        'Aidan Montague, Chairman, as of 2017-02-20',
+        'Jo Lee, CEO, 2019 to present',
+        'Jo Lee, &lt;b&gt;CTO&lt;/b&gt;, current'
+    ]);
+});
+
 test('only public comments are loaded, with text and date but never the author', async function (t) {
     const productId = new mongoose.Types.ObjectId();
     const filters = [];
