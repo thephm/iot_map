@@ -27,6 +27,9 @@ Empty social URLs are omitted.
 ## People and admin migration compatibility
 
 `/people` lists people in pages of 50, with public detail pages at `/people/:slug`.
+The list and the homepage people total include only people with a position linked to an IoT
+organization (see below), so friends of IoT Map who only worked elsewhere are left out. Their
+person pages still open from organization pages.
 People without a slug remain readable in the list but are not given invented links.
 Person pages display titles, websites, social profiles, and both legacy and migrated
 positions. Legacy `company` and `date` remain readable: `date` is labeled **As of**,

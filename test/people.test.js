@@ -245,6 +245,7 @@ test('public people routes and every organization detail entry point are compati
         ]);
     });
     t.mock.method(Person, 'find', function (filter) {
+        listFilters.push(filter);
         if (filter['positions.organization_id'] && linkedError) { throw new Error('People query failed'); }
         return query(listResult, function (fields) { projections.push(fields); });
     });
@@ -254,6 +255,12 @@ test('public people routes and every organization detail entry point are compati
     });
     t.mock.method(Organization, 'find', function (filter) {
         return query(filter._id ? [{ _id: orgId, name: 'Current Co', slug: 'current-co' }] : [organization]);
+    });
+    const listFilters = [];
+    t.mock.method(Organization, 'distinct', async function (field, filter) {
+        assert.equal(field, '_id');
+        assert.equal(filter.iot_organization.$ne, false);
+        return [orgId];
     });
     t.mock.method(Organization, 'findOne', function (filter) {
         organizationLookups.push(filter);
@@ -290,6 +297,8 @@ test('public people routes and every organization detail entry point are compati
         assert.match(html, /href="\/people\/jo-smith"/);
         assert.match(html, /Legacy/);
         assert.doesNotMatch(html, /birthday|private|1978-03-05|href="\/people\/undefined"/);
+        // Only people with a position at an IoT organization are listed.
+        assert.deepEqual(listFilters.at(-1)['positions.organization_id'].$in, [orgId, String(orgId)]);
     });
     await t.test('person page has new and old positions, current organization links, no birthday', async function () {
         const response = await fetch(base + '/people/jo-smith');

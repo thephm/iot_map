@@ -137,7 +137,7 @@ function iotOnly(filter) {
 router.get('/', function (req, res, next) {
     Promise.all([
         Organization.countDocuments(iotOnly({})),
-        Person.countDocuments({}),
+        publicPeople.iotPeopleFilter().then(function (filter) { return Person.countDocuments(filter); }),
         Organization.aggregate([
             { $match: { iot_organization: { $ne: false } } },
             { $group: { _id: null, count: { $sum: { $size: { $ifNull: ['$product', []] } } } } }
@@ -157,7 +157,7 @@ router.get('/people', async function (req, res, next) {
     }
     page = Number(page);
     try {
-        var people = await Person.find({}).select('-birthday')
+        var people = await Person.find(await publicPeople.iotPeopleFilter()).select('-birthday')
             .sort({ last_name: 1, first_name: 1, _id: 1 }).skip((page - 1) * 50).limit(51).lean().exec();
         res.render('people', {
             people: people.slice(0, 50).map(publicPeople.publicPerson),

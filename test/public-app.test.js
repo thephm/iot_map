@@ -46,7 +46,15 @@ test('public app starts without session credentials and serves read-only routes'
         assert.equal(options.autoIndex, false);
     });
     t.mock.method(Organization, 'countDocuments', async function () { return 1; });
-    t.mock.method(Person, 'countDocuments', async function () { return 2; });
+    t.mock.method(Organization, 'distinct', async function (field, filter) {
+        assert.equal(field, '_id');
+        assert.equal(filter.iot_organization.$ne, false);
+        return [organization._id];
+    });
+    t.mock.method(Person, 'countDocuments', async function (filter) {
+        assert.deepEqual(filter['positions.organization_id'].$in, [organization._id, String(organization._id)]);
+        return 2;
+    });
     t.mock.method(Person, 'find', function () {
         const query = {
             select: function () { return query; },
