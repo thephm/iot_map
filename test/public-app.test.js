@@ -99,7 +99,7 @@ test('public app starts without session credentials and serves read-only routes'
             return requireApp(name);
         },
         __dirname: root,
-        process: { env: { NODE_ENV: 'production', MONGODB_URI: 'mongodb://unused/iotmap', MONGODB_ENVIRONMENT: 'development' } },
+        process: { env: { NODE_ENV: 'production', MONGODB_URI: 'mongodb://unused/iotmap' } },
         console: console
     }, { filename: 'app.js' });
     if (!server.listening) { await once(server, 'listening'); }

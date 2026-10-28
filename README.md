@@ -81,8 +81,11 @@ Create a `.env` file in the repository root:
 ```dotenv
 GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 SHOW_PRODUCT_URLS=false
-MONGODB_ENVIRONMENT=development
+MONGODB_URI=mongodb://127.0.0.1:27017/iotmap
 ```
+
+Keep the Atlas URI out of this file. Production gets `MONGODB_URI` from Render's environment,
+and iot_map_admin keeps its own copy in `.env.prod`.
 
 The public app is read-only and does not use login accounts, sessions, or cookies.
 `SESSION_SECRET` is no longer needed and can be removed from existing deployments.
@@ -95,15 +98,17 @@ Do not bake secrets into an image.
 | --- | --- | --- |
 | `GOOGLE_MAPS_API_KEY` | Browser key for the Google Maps JavaScript API | Required for the map |
 | `NODE_ENV` | Express runtime environment | Docker image: `production`; Compose: `development`; set explicitly for other production deployments |
-| `MONGODB_URI` | MongoDB connection URI, including the database name | Docker Compose: `mongodb://mongo:27017/iotmap`; required when running Node directly |
-| `MONGODB_ENVIRONMENT` | Environment label shown in the UI; set it to match the MongoDB target | Compose: `development`; otherwise `unknown`; always hidden when `NODE_ENV=production` |
+| `MONGODB_URI` | MongoDB connection URI, including the database name | Docker Compose: always `mongodb://mongo:27017/iotmap`; required when running Node directly |
 | `SHOW_PRODUCT_URLS` | Show product website URLs when set to exactly `true` | `false` |
 | `PORT` | HTTP port used by Node | `3000`; Compose publishes it on host port `3030` |
 
-The navbar shows the value of `MONGODB_ENVIRONMENT` so you can distinguish development
-and production data. The Compose default is `development` for its local MongoDB; if
-you override `MONGODB_URI`, also set this label to match. It is not inferred from the
-URI. When `NODE_ENV=production` the label is hidden regardless of this setting.
+The navbar shows which database the app is connected to, read from `MONGODB_URI`:
+**MongoDB: local** for the Compose container or localhost, and a bold **MongoDB: Atlas
+(production)** for Atlas. It is hidden when `NODE_ENV=production`.
+
+Docker Compose always uses its own `mongo` container. It ignores any `MONGODB_URI` in `.env`
+or the shell, because Compose substitutes `${...}` values from `.env`. iot_map_admin's
+`npm run dev` uses the same database (port 27017), so the two apps show the same local data.
 
 ### Run with Docker Compose
 

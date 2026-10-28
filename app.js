@@ -16,8 +16,8 @@ app.set("view engine", "ejs");
 app.locals.showProductUrls = process.env.SHOW_PRODUCT_URLS === 'true';
 // The People list includes friends of IoT Map, so it is not linked from the production navbar.
 app.locals.showPeopleNav = process.env.NODE_ENV !== 'production';
-app.locals.mongoEnvironment = process.env.NODE_ENV === 'production' ? '' :
-    process.env.MONGODB_ENVIRONMENT || 'unknown';
+app.locals.mongoEnvironment = process.env.NODE_ENV === 'production' ? null :
+    require('./lib/database-label')(process.env.MONGODB_URI);
 app.locals.socialIcons = require('./config/social-icons.json');
 
 app.use(function (req, res, next) {

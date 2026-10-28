@@ -11,7 +11,7 @@
       <% } %>
       <a class="navbar-brand site-wordmark" href="/">IoT Map</a>
       <% if (locals.mongoEnvironment) { %>
-      <span class="database-environment" aria-label="MongoDB environment">MongoDB: <%= mongoEnvironment %></span>
+      <span class="database-environment database-environment-<%= mongoEnvironment.kind %>" aria-label="MongoDB environment">MongoDB: <%= mongoEnvironment.text %></span>
       <% } %>
     </div> <!-- navbar-header -->
 

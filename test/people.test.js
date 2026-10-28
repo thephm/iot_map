@@ -213,7 +213,7 @@ test('person rendering escapes old/new position text and keeps as-of dates separ
         positions: [{ title: '<img src=x>', company: '<b>Legacy</b>', date: '2018' }]
     });
     const html = await ejs.renderFile(path.join(__dirname, '..', 'views', 'person.ejs'), {
-        person: result, mongoEnvironment: 'test'
+        person: result, mongoEnvironment: { text: 'test', kind: 'local' }
     });
     assert.match(html, /&lt;script&gt;/);
     assert.match(html, /&lt;img src=x&gt;/);
@@ -269,7 +269,7 @@ test('public people routes and every organization detail entry point are compati
     const app = express();
     app.set('views', path.join(__dirname, '..', 'views'));
     app.set('view engine', 'ejs');
-    app.locals.mongoEnvironment = 'test';
+    app.locals.mongoEnvironment = { text: 'test', kind: 'local' };
     app.locals.socialIcons = {};
     app.locals.showProductUrls = false;
     app.use(function (req, res, next) {
