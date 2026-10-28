@@ -17,3 +17,5 @@ iot_map.njsproj.user
 config/*.json
 !config/social-icons.json
 .env
+.env.local
+.claude/
