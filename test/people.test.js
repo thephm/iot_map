@@ -124,7 +124,7 @@ test('organization people queries exclude birthdays and match IDs in either BSON
     assert.doesNotMatch(JSON.stringify(result), /birthday|private|Unresolved Co/);
 });
 
-test('embedded founders link to a unique matching Founder person and otherwise keep stored values', async function () {
+test('founders are Founder people, plus embedded founders no such person matches', async function () {
     const founder = (name, href, title) => ({ name, href, positions: [{ title }] });
     const people = [
         founder('Ada Lovelace', '/people/ada-lovelace', 'Co-Founder & CEO'),
@@ -140,12 +140,14 @@ test('embedded founders link to a unique matching Founder person and otherwise k
         { name: 'Unlinked', url: 'unlinked.example.com' },
         {}
     ] } }), people);
+    // Grace Hopper is an Engineer here, so her embedded record stays (its javascript: URL dropped);
+    // the blank embedded record is not shown.
     assert.deepEqual(founders, [
-        { name: 'ada LOVELACE', href: '/people/ada-lovelace', url: '' },
-        { name: 'Grace Hopper', href: '', url: '' },
-        { name: 'Jo Lee', href: '', url: '' },
-        { name: 'Unlinked', href: '', url: 'http://unlinked.example.com' },
-        { name: 'Unnamed founder', href: '', url: '' }
+        { name: 'Ada Lovelace', href: '/people/ada-lovelace', url: '' },
+        { name: 'Jo Lee', href: '/people/jo-lee', url: '' },
+        { name: 'jo  lee', href: '/people/jo-lee-2', url: '' },
+        { name: 'Unlinked', href: '', url: '' },
+        { name: 'Grace Hopper', href: '', url: '' }
     ]);
     const html = await ejs.renderFile(path.join(__dirname, '..', 'views', 'organization.ejs'), {
         organization: new Organization({ name: 'Acme', slug: 'acme' }), people: [], founders: [
