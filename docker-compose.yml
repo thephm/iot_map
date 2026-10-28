@@ -8,7 +8,8 @@ services:
       - .env
     environment:
       - NODE_ENV=${NODE_ENV:-development}
-      - MONGODB_URI=${MONGODB_URI:-mongodb://mongo:27017/iotmap}
+      # Fixed, not ${MONGODB_URI:-...}: Compose fills that from .env, which holds the Atlas URI.
+      - MONGODB_URI=mongodb://mongo:27017/iotmap
       - MONGODB_ENVIRONMENT=${MONGODB_ENVIRONMENT:-development}
       - SHOW_PRODUCT_URLS=${SHOW_PRODUCT_URLS:-false}
     depends_on:
