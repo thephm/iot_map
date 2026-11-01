@@ -163,7 +163,7 @@ test('organization people are one line per position with name, title and dates',
     const html = await ejs.renderFile(path.join(__dirname, '..', 'views', 'organization.ejs'), {
         organization: new Organization({ name: 'Acme', slug: 'acme' }), founders: [], socialIcons: {}, showProductUrls: false,
         people: [
-            { name: 'Mark Lapins', slug: 'mark-lapins', href: '/people/mark-lapins', positions: [{ title: 'Director', start_date: '2013-12', end_date: '2020-03' }] },
+            { name: 'Mark Lapins', slug: 'mark-lapins', href: '/people/mark-lapins', positions: [{ title: 'Director', start_date: '2013-12', end_date: '2020-03', date: '2017-02-20' }] },
             { name: 'Aidan Montague', href: '', positions: [{ title: 'Chairman', date: '2017-02-20' }] },
             { name: 'Jo Lee', href: '', positions: [{ title: 'CEO', start_date: '2019', current: true }, { title: '<b>CTO</b>', current: true }] }
         ]
