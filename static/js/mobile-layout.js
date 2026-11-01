@@ -2,6 +2,9 @@ var mobileLayout = window.matchMedia('(max-width: 767px)');
 var productsSection = document.getElementById('products');
 var mapColumn = document.getElementById('map-column');
 var organizationsSection = document.getElementById('organizations');
+var searchInput = document.getElementById('nav-search');
+var searchForm = document.getElementById('nav-search-form');
+var mobileSearchSlot = document.getElementById('mobile-search-slot');
 
 function positionProducts() {
     if (mobileLayout.matches) {
@@ -13,8 +16,21 @@ function positionProducts() {
     }
 }
 
-positionProducts();
-mobileLayout.addEventListener('change', positionProducts);
+function positionSearch() {
+    if (mobileLayout.matches) {
+        mobileSearchSlot.appendChild(searchInput);
+    } else {
+        searchForm.appendChild(searchInput);
+    }
+}
+
+function positionMobileLayout() {
+    positionProducts();
+    positionSearch();
+}
+
+positionMobileLayout();
+mobileLayout.addEventListener('change', positionMobileLayout);
 
 var sectionButtons = document.querySelectorAll('.mobile-section-toggle');
 sectionButtons.forEach(function(button) {

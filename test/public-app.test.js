@@ -132,6 +132,8 @@ test('public app starts without session credentials and serves read-only routes'
         for (const section of ['primary_category secondary_category', 'mapDiv']) {
             assert.ok(html.includes('aria-expanded="true" aria-controls="' + section + '"'));
         }
+        assert.match(html, /id="mobile-map-controls"/);
+        assert.match(html, /id="nav-search" form="nav-search-form"/);
         assert.match(html, /src="\/js\/mobile-layout.js"/);
         assert.doesNotMatch(html, /action="\/(?:login|logout|edit)"/);
         const scripts = html.match(/<script src="https:\/\/ajax\.googleapis\.com[^>]+>/g);
@@ -146,6 +148,8 @@ test('public app starts without session credentials and serves read-only routes'
         const events = [];
         const productClasses = new Set();
         const placements = [];
+        const searchPlacements = [];
+        const searchInput = {};
         const sections = {
             products: {
                 classList: {
@@ -163,6 +167,18 @@ test('public app starts without session credentials and serves read-only routes'
                 after: function (section) {
                     assert.equal(section, sections.products);
                     placements.push('after-company');
+                }
+            },
+            'nav-search-form': {
+                appendChild: function (input) {
+                    assert.equal(input, searchInput);
+                    searchPlacements.push('navbar');
+                }
+            },
+            'mobile-search-slot': {
+                appendChild: function (input) {
+                    assert.equal(input, searchInput);
+                    searchPlacements.push('mobile');
                 }
             }
         };
@@ -207,20 +223,25 @@ test('public app starts without session credentials and serves read-only routes'
             },
             document: {
                 querySelectorAll: function () { return buttons; },
-                getElementById: function (id) { return sections[id]; },
+                getElementById: function (id) {
+                    return id === 'nav-search' ? searchInput : sections[id];
+                },
                 dispatchEvent: function (event) { events.push(event.type); }
             },
             Event: Event
         });
         assert.deepEqual(placements, ['after-company']);
+        assert.deepEqual(searchPlacements, ['mobile']);
         assert.equal(productClasses.has('col-xs-12'), true);
         mobileLayout.matches = false;
         layoutChange();
         assert.deepEqual(placements, ['after-company', 'below-map']);
+        assert.deepEqual(searchPlacements, ['mobile', 'navbar']);
         assert.equal(productClasses.has('col-xs-12'), false);
         mobileLayout.matches = true;
         layoutChange();
         assert.deepEqual(placements, ['after-company', 'below-map', 'after-company']);
+        assert.deepEqual(searchPlacements, ['mobile', 'navbar', 'mobile']);
         buttons[0].click();
         assert.equal(buttons[0].getAttribute('aria-expanded'), 'false');
         assert.equal(buttons[1].getAttribute('aria-expanded'), 'false');
