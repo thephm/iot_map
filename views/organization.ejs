@@ -21,6 +21,8 @@
   <p>Founded: <%= organization.history.founded_year %></p>
 <% } %>
 
+<% // Person links remember this organization so the person page can link back to it on the map.
+var fromOrganization = '?from=' + encodeURIComponent(organization.slug); %>
 <% var founderLinks = locals.founders || organization.history.founder.map(function (founder) {
   return { name: [founder.first_name, founder.last_name].filter(Boolean).join(' ') || founder.name || 'Unnamed founder',
     href: '', url: organization.checkUrl(founder.url) };
@@ -28,7 +30,7 @@
 <% if (founderLinks.length) { %><p>Founders:<% } %>
 <% founderLinks.forEach(function (founder, i) { %>
   <% if (i) { %>, <% } %>
-  <% if (founder.href) { %><a href="<%= founder.href %>"><%= founder.name %></a>
+  <% if (founder.href) { %><a href="<%= founder.href + fromOrganization %>"><%= founder.name %></a>
   <% } else if (founder.url) { %><a href="<%= founder.url %>" target="<%= organization.slug %>"><%= founder.name %></a>
   <% } else { %><%= founder.name %><% } %>
 <% }); %>
@@ -92,7 +94,7 @@ if (address) { %><p>Address: <%= address %></p><% } %>
             : position.end_date ? 'until ' + position.end_date
             : position.current ? 'current' : '';
           var details = [position.title, when, position.date ? 'as of ' + position.date : ''].filter(Boolean); %>
-          <li><% if (person.href) { %><a href="<%= person.href %>"><%= person.name %></a><% } else { %><%= person.name %><% } %><% details.forEach(function (detail) { %>, <%= detail %><% }); %></li>
+          <li><% if (person.href) { %><a href="<%= person.href + fromOrganization %>"><%= person.name %></a><% } else { %><%= person.name %><% } %><% details.forEach(function (detail) { %>, <%= detail %><% }); %></li>
         <% }); %>
       <% }); %>
     </ul>

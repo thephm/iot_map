@@ -1,7 +1,11 @@
 <%- include('header'); -%>
 <%- include('navbar', { standaloneNavigation: true }); -%>
 <main class="container">
-  <p><a href="/people">People</a></p>
+  <% if (locals.mapOrganization) { %>
+    <p><a href="/?organization=<%= encodeURIComponent(mapOrganization) %>">&larr; Map</a></p>
+  <% } else { %>
+    <p><a href="/people">People</a></p>
+  <% } %>
   <h1><%= person.name %></h1>
   <% if (person.title) { %><p><%= person.title %></p><% } %>
   <% if (person.url) { %><p><a href="<%= person.url %>">Website</a></p><% } %>

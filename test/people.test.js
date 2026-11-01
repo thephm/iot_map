@@ -155,7 +155,7 @@ test('founders are Founder people, plus embedded founders no such person matches
         ], socialIcons: {}, showProductUrls: false
     });
     assert.match(html, /Founders:/);
-    assert.match(html, /<a href="\/people\/ada-lovelace">&lt;b&gt;Ada&lt;\/b&gt;<\/a>/);
+    assert.match(html, /<a href="\/people\/ada-lovelace\?from=acme">&lt;b&gt;Ada&lt;\/b&gt;<\/a>/);
     assert.match(html, /<a href="http:\/\/bob.example" target="acme">Bob<\/a>/);
 });
 
@@ -171,7 +171,7 @@ test('organization people are one line per position with name, title and dates',
     const section = html.slice(html.indexOf('<h2>People</h2>'));
     const items = [...section.matchAll(/<li>(.*?)<\/li>/g)].map((match) => match[1]);
     assert.deepEqual(items, [
-        '<a href="/people/mark-lapins">Mark Lapins</a>, Director, 2013-12 to 2020-03',
+        '<a href="/people/mark-lapins?from=acme">Mark Lapins</a>, Director, 2013-12 to 2020-03',
         'Aidan Montague, Chairman, as of 2017-02-20',
         'Jo Lee, CEO, 2019 to present',
         'Jo Lee, &lt;b&gt;CTO&lt;/b&gt;, current'
@@ -325,6 +325,8 @@ test('public people routes and every organization detail entry point are compati
         const response = await fetch(base + '/people/jo-smith');
         assert.equal(response.status, 200);
         const html = await response.text();
+        assert.match(html, /<a href="\/people">People<\/a>/);
+        assert.doesNotMatch(html, /&larr; Map/);
         assert.match(html, /href="\/organization\/current-co"/);
         assert.match(html, /Unresolved Co/);
         assert.match(html, /Deleted Co/);
@@ -334,13 +336,18 @@ test('public people routes and every organization detail entry point are compati
         assert.doesNotMatch(html, /stale-slug|deleted-org|unsafe-stale|birthday|1978-03-05/);
         assert.doesNotMatch(JSON.stringify(capturedPerson), /birthday|private/);
     });
+    await t.test('person page opened from an organization links back to it on the map', async function () {
+        const html = await (await fetch(base + '/people/jo-smith?from=' + encodeURIComponent('current-co"<'))).text();
+        assert.match(html, /<a href="\/\?organization=current-co%22%3C">&larr; Map<\/a>/);
+        assert.doesNotMatch(html, /<a href="\/people">People<\/a>/);
+    });
     await t.test('nested organization results link back to people and retain old/new founders', async function () {
         listResult = [person];
         for (const route of ['/organization/current-co', '/organization?term=current', '/standard/current-co']) {
             const response = await fetch(base + route);
             assert.equal(response.status, 200, route);
             const html = await response.text();
-            assert.match(html, /href="\/people\/jo-smith"/);
+            assert.match(html, /href="\/people\/jo-smith\?from=current-co"/);
             assert.match(html, /Legacy Founder/);
             assert.match(html, /New Founder/);
             assert.match(html, /&lt;script&gt;old&lt;\/script&gt;/);
@@ -372,7 +379,7 @@ test('public people routes and every organization detail entry point are compati
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })).text();
         assert.doesNotMatch(fragment, /<!DOCTYPE html>|navbar-static-top/);
-        assert.match(fragment, /href="\/people\/jo-smith"/);
+        assert.match(fragment, /href="\/people\/jo-smith\?from=current-co"/);
     });
     await t.test('missing records produce 404 and database failures propagate', async function () {
         detailResult = null;

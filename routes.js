@@ -172,7 +172,11 @@ router.get('/people/:personSlug', async function (req, res, next) {
     try {
         var person = await Person.findOne({ slug: slug }).select('-birthday').lean().exec();
         if (!person) { return next(404); }
+        // Set when the person was opened from an organization, so the page links back to it on the map.
+        var from = typeof req.query.from === 'string' && req.query.from.trim() && req.query.from.length <= 200
+            ? req.query.from : '';
         res.render('person', {
+            mapOrganization: from,
             person: await publicPeople.personWithOrganizations(person),
             comments: await publicComments.forEntity('person', person._id)
         });

@@ -364,7 +364,7 @@ window.onload = function() {
         function loadJSON(category, subCategory) {
             url = 'map/product/category/' + category + '/subcategory/' + subCategory;
 
-            $.ajax({
+            return $.ajax({
                 type: 'GET',
                 url: url,
                 dataType: 'json',
@@ -477,13 +477,14 @@ window.onload = function() {
 
             url = 'product/categories/';
 
-            $.ajax({
+            // Resolves once the first category's organizations are listed.
+            return $.ajax({
                 type: 'GET',
                 url: url,
                 dataType: 'json',
                 cache: false,
-                error: function() { console.log('could not load the categories'); },
-                success: function(data) {
+                error: function() { console.log('could not load the categories'); }
+            }).then(function(data) {
 
                     changeCategories(data);
                     categories = getCategories();
@@ -507,8 +508,7 @@ window.onload = function() {
                   setupCategoryClick();
                   setupSubCategoryClick();
 
-                  loadOrganizations(categorySlug, subCategorySlug);
-                }
+                  return loadOrganizations(categorySlug, subCategorySlug);
             }); 
         }
 		
@@ -624,7 +624,7 @@ window.onload = function() {
 
             url = '/organization/product/category/' + categorySlug;
             if (subCategorySlug) { url += '/subcategory/' + subCategorySlug; }
-            $.ajax({
+            return $.ajax({
                 type: 'GET',
                 url: url,
                 cache: false,
@@ -746,8 +746,8 @@ window.onload = function() {
          * @return null
          */
         function loadOrganization(slug) {
-            url = '/organization/' + slug;
-            $.ajax({
+            url = '/organization/' + encodeURIComponent(slug);
+            return $.ajax({
                 type: 'GET',
                 url: url,
                 cache: false,
@@ -850,8 +850,23 @@ window.onload = function() {
         });
 
         defaultCategory = 'iot-platform';
-        loadCategories();
-	    loadJSON('iot-platform', 'software');
+        var listLoaded = loadCategories();
+        var mapLoaded = loadJSON('iot-platform', 'software');
+
+        // /?organization=<slug> (the person page's "Map" link) opens with that organization selected,
+        // after the default list so Back still returns to it.
+        var initialOrganization = new URLSearchParams(window.location.search).get('organization');
+        if (initialOrganization && /^[\w-]+$/.test(initialOrganization)) {
+            $.when(listLoaded, mapLoaded).then(function () {
+                return loadOrganization(initialOrganization);
+            }).then(function () {
+                zoomToOrganization(initialOrganization);
+                var feature = map.data.getFeatureById(initialOrganization);
+                if (feature) {
+                    map.data.overrideStyle(feature, {icon: "https://maps.google.com/mapfiles/ms/icons/green-dot.png"});
+                }
+            });
+        }
     }
 
     initMap();    // create the Map object
