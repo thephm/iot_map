@@ -174,7 +174,7 @@ test('organization people are one line per position with name, title and dates',
         '<a href="/people/mark-lapins?from=acme">Mark Lapins</a>, Director, 2013-12 to 2020-03 <span class="person-slug">mark-lapins</span>',
         'Aidan Montague, Chairman, as of 2017-02-20',
         'Jo Lee, CEO, 2019 to present',
-        'Jo Lee, &lt;b&gt;CTO&lt;/b&gt;, current'
+        'Jo Lee, &lt;b&gt;CTO&lt;/b&gt;'
     ]);
 });
 
