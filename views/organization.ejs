@@ -20,6 +20,17 @@
 <% if (organization.history.founded_year) { %>
   <p>Founded: <%= organization.history.founded_year %></p>
 <% } %>
+<% if (organization.history.died_year != null) { %>
+  <p>Closed: <%= organization.history.died_year %></p>
+<% } else if (organization.history.acquired_year != null) { %>
+  <p>Acquired: <%= organization.history.acquired_year %></p>
+<% } %>
+<% if (organization.history.acquired_by) { %>
+  <p>Acquired by:
+    <% if (locals.acquiredBySlug) { %><a href="/?organization=<%= encodeURIComponent(acquiredBySlug) %>"><%= organization.history.acquired_by %></a>
+    <% } else { %><%= organization.history.acquired_by %><% } %>
+  </p>
+<% } %>
 
 <% // Person links remember this organization so the person page can link back to it on the map.
 var fromOrganization = '?from=' + encodeURIComponent(organization.slug); %>

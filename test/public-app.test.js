@@ -34,7 +34,10 @@ test('public app starts without session credentials and serves read-only routes'
         name: 'Example organization',
         slug: 'example',
         url: 'example.com',
-        history: { founder: [{ name: 'Founder', url: 'founder.example.com' }] },
+        history: {
+            founded_year: 2010, acquired_year: 2020, acquired_by: 'Acquirer Co',
+            died_year: 2022, founder: [{ name: 'Founder', url: 'founder.example.com' }]
+        },
         post: [{ service: 'News', url: 'news.example.com' }],
         stock: { ticker_symbol: 'EX', url: 'stock.example.com' },
         location: [{ address: { lat: 45, lng: -75 } }],
@@ -78,8 +81,15 @@ test('public app starts without session credentials and serves read-only routes'
         assert.deepEqual(pipeline[0], { $match: { iot_organization: { $ne: false } } });
         return pipeline.some(function (stage) { return stage.$unwind; }) ? [] : [{ count: 1 }];
     });
-    t.mock.method(Organization, 'findOne', function () {
-        return { exec: async function () { return organization; } };
+    t.mock.method(Organization, 'findOne', function (filter) {
+        const query = {
+            select: function () { return query; },
+            lean: function () { return query; },
+            exec: async function () {
+                return filter.name === 'Acquirer Co' ? { slug: 'acquirer-co' } : organization;
+            }
+        };
+        return query;
     });
     t.mock.method(Organization, 'find', function (filter) {
         organizationFilters.push(filter);
@@ -270,6 +280,14 @@ test('public app starts without session credentials and serves read-only routes'
             assert.ok(html.includes('href="http://' + host + '"'), host);
         }
         assert.match(html, /Example product/);
+        assert.match(html, /Founded: 2010/);
+        assert.match(html, /Closed: 2022/);
+        assert.match(html, /Acquired by:\s*<a href="\/\?organization=acquirer-co">Acquirer Co<\/a>/);
+        assert.doesNotMatch(html, /Acquired: 2020/);
+
+        organization.history.died_year = undefined;
+        const acquired = await (await fetch(base + '/organization/example')).text();
+        assert.match(acquired, /Acquired: 2020/);
     });
 
     await t.test('search, map and category endpoints remain accessible without sessions', async function () {
