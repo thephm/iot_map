@@ -94,7 +94,7 @@ if (address) { %><p>Address: <%= address %></p><% } %>
             : position.end_date ? 'until ' + position.end_date
             : position.current ? 'current' : '';
           var details = [position.title, when, position.date ? 'as of ' + position.date : ''].filter(Boolean); %>
-          <li><% if (person.href) { %><a href="<%= person.href + fromOrganization %>"><%= person.name %></a><% } else { %><%= person.name %><% } %><% details.forEach(function (detail) { %>, <%= detail %><% }); %></li>
+          <li><% if (person.href) { %><a href="<%= person.href + fromOrganization %>"><%= person.name %></a><% } else { %><%= person.name %><% } %><% details.forEach(function (detail) { %>, <%= detail %><% }); %><% if (person.slug) { %> <span class="person-slug"><%= person.slug %></span><% } %></li>
         <% }); %>
       <% }); %>
     </ul>
