@@ -165,6 +165,7 @@ test('organization people are one line per position with name, title and dates',
         people: [
             { name: 'Mark Lapins', slug: 'mark-lapins', href: '/people/mark-lapins', positions: [{ title: 'Director', start_date: '2013-12', end_date: '2020-03', date: '2017-02-20' }] },
             { name: 'Aidan Montague', href: '', positions: [{ title: 'Chairman', date: '2017-02-20' }] },
+            { name: 'Oliver Loisel', href: '', positions: [{ title: 'Managing Partner', start_date: '2010', end_date: '2021', date: '2017-02-20' }] },
             { name: 'Jo Lee', href: '', positions: [{ title: 'CEO', start_date: '2019', current: true }, { title: '<b>CTO</b>', current: true }] }
         ]
     });
@@ -173,6 +174,7 @@ test('organization people are one line per position with name, title and dates',
     assert.deepEqual(items, [
         '<a href="/people/mark-lapins?from=acme">Mark Lapins</a>, Director, 2013-12 to 2020-03 <span class="person-slug">mark-lapins</span>',
         'Aidan Montague, Chairman, as of 2017-02-20',
+        'Oliver Loisel, Managing Partner, 2010 to 2021',
         'Jo Lee, CEO, 2019 to present',
         'Jo Lee, &lt;b&gt;CTO&lt;/b&gt;'
     ]);
