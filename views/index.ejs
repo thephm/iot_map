@@ -227,21 +227,22 @@ label {
     #map-column {
         margin-bottom: 15px;
     }
+    /* Search and the Map toggle split the row, lining up with Category and Sub-Category. */
     #mobile-map-controls {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
         margin-top: 6px;
     }
     #mobile-search-slot {
-        flex: 1 1 auto;
+        flex: 1 1 0;
         min-width: 0;
     }
     #mobile-search-slot #nav-search {
         width: 100%;
     }
     #mobile-map-controls .mobile-section-toggle {
-        flex: 0 0 auto;
+        flex: 1 1 0;
         width: auto;
         min-height: 36px;
         margin: 0;
