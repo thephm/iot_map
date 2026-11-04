@@ -628,7 +628,7 @@ window.onload = function() {
             var $panel = $('#organizations');
             var mobile = window.matchMedia('(max-width: 767px)').matches;
             var panelTop = $panel[0].getBoundingClientRect().top;
-            var isList = $('<div>').html(html).find('.organization-panel').length > 0;
+            var isList = $('<div>').html(html).find('.organization-panel, .search-people').length > 0;
 
             if (isList) {
                 lastListHtml = html;

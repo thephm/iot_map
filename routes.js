@@ -183,41 +183,56 @@ router.get('/people/:personSlug', async function (req, res, next) {
     } catch (error) { next(error); }
 });
 
-router.get('/organization', function (req, res, next) {
-    var re = String(req.query.term || "");
+function escapeRegExp(value) {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
-    Organization.find(iotOnly({
+// A typed name as slug text, so "Şamil Beden" finds the slug "samil-beden".
+function searchSlug(term) {
+    return transliterate(term).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+/** Search terms match names through their slugs, and product descriptions as typed. */
+function organizationSearchFilter(term) {
+    var slug = escapeRegExp(searchSlug(term) || term);
+    return iotOnly({
         $or:
-            [{ 'slug': mongoose.trusted({ $regex: re, $options: 'i' }) },
-            { 'product.slug': mongoose.trusted({ $regex: re, $options: 'i' }) },
-            { 'product.description': mongoose.trusted({ $regex: re, $options: 'i' }) }
+            [{ 'slug': mongoose.trusted({ $regex: slug, $options: 'i' }) },
+            { 'product.slug': mongoose.trusted({ $regex: slug, $options: 'i' }) },
+            { 'product.description': mongoose.trusted({ $regex: escapeRegExp(term), $options: 'i' }) }
             ]
-    }))
-        .sort({ 'name': 1 })
-        .exec()
-        .then(function (organizations) {
-            if (organizations.length > 1) {
-                res.render("organizations", { organizations: organizations });
-            } else if (organizations.length == 1) {
-                return publicPeople.renderOrganization(req, res, organizations[0]);
-            } else {
-                res.render("nonefound");
-            }
-        })
-        .catch(next);
+    });
+}
 
+async function searchPeople(term) {
+    var slug = searchSlug(term);
+    if (!slug) { return []; }
+    var people = await Person.find({
+        ...await publicPeople.iotPeopleFilter(),
+        slug: mongoose.trusted({ $regex: escapeRegExp(slug), $options: 'i' })
+    }).select('-birthday').sort({ last_name: 1, first_name: 1, _id: 1 }).limit(50).lean().exec();
+    return people.map(publicPeople.publicPerson);
+}
+
+router.get('/organization', async function (req, res, next) {
+    var term = String(req.query.term || "");
+    try {
+        var [organizations, people] = await Promise.all([
+            Organization.find(organizationSearchFilter(term)).sort({ 'name': 1 }).exec(),
+            searchPeople(term)
+        ]);
+        if (organizations.length == 1 && !people.length) {
+            return await publicPeople.renderOrganization(req, res, organizations[0]);
+        }
+        if (organizations.length || people.length) {
+            return res.render("organizations", { organizations: organizations, people: people });
+        }
+        res.render("nonefound");
+    } catch (error) { next(error); }
 });
 
 router.get("/map/organization", function (req, res, next) {
-    var re = String(req.query.term || "");
-
-    Organization.find(iotOnly({
-        $or:
-            [{ 'slug': mongoose.trusted({ $regex: re, $options: 'i' }) },
-            { 'product.slug': mongoose.trusted({ $regex: re, $options: 'i' }) },
-            { 'product.description': mongoose.trusted({ $regex: re, $options: 'i' }) }
-            ]
-    }))
+    Organization.find(organizationSearchFilter(String(req.query.term || "")))
         .exec()
         .then(function (organizations) {
             res.type("json").send(getGeoJSON(organizations));

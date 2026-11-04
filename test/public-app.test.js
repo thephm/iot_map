@@ -62,6 +62,7 @@ test('public app starts without session credentials and serves read-only routes'
         const query = {
             select: function () { return query; },
             sort: function () { return query; },
+            limit: function () { return query; },
             lean: function () { return query; },
             exec: async function () { return []; }
         };

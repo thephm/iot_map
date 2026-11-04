@@ -22,3 +22,16 @@
   </div>
 
 <% }) %>
+<% // Search also finds people; each opens their own page.
+if (locals.people && people.length) { %>
+  <div class="panel panel-default search-people">
+    <div class="panel-heading">People</div>
+    <div class="panel-body">
+      <% people.forEach(function (person) {
+        var position = person.positions[0];
+        var detail = position ? [position.title, position.company].filter(Boolean).join(', ') : ''; %>
+        <p><% if (person.href) { %><a href="<%= person.href %>"><%= person.name %></a><% } else { %><%= person.name %><% } %><% if (detail) { %><br><small><%= detail %></small><% } %></p>
+      <% }); %>
+    </div>
+  </div>
+<% } %>

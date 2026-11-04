@@ -237,6 +237,7 @@ test('public people routes and every organization detail entry point are compati
         ] }
     });
     let listResult = [person];
+    let searchResult = [];
     let detailResult = person;
     let orgResult = organization;
     let linkedError = false;
@@ -252,7 +253,7 @@ test('public people routes and every organization detail entry point are compati
     t.mock.method(Person, 'find', function (filter) {
         listFilters.push(filter);
         if (filter['positions.organization_id'] && linkedError) { throw new Error('People query failed'); }
-        return query(listResult, function (fields) { projections.push(fields); });
+        return query(filter.slug ? searchResult : listResult, function (fields) { projections.push(fields); });
     });
     t.mock.method(Person, 'findOne', function (filter) {
         assert.equal(typeof filter.slug, 'string');
@@ -338,6 +339,24 @@ test('public people routes and every organization detail entry point are compati
         }
         assert.ok(projections.length > 0);
         assert.ok(projections.every((fields) => fields === '-birthday'));
+    });
+    await t.test('search finds IoT people by name, with or without accents', async function () {
+        const samil = { _id: new mongoose.Types.ObjectId(), slug: 'samil-beden', first_name: 'Şamil', last_name: 'Beden',
+            birthday: 'private', positions: [{ title: 'IoT Project Manager', company: 'Ardic', organization_id: orgId }] };
+        searchResult = [samil];
+        for (const term of ['Şamil Beden', 'samil beden', 'Beden']) {
+            const html = await (await fetch(base + '/organization?term=' + encodeURIComponent(term))).text();
+            const filter = listFilters.at(-1);
+            assert.deepEqual(filter['positions.organization_id'].$in, [orgId, String(orgId)]);
+            assert.equal(new RegExp(filter.slug.$regex, filter.slug.$options).test('samil-beden'), true, term);
+            assert.match(html, /<a href="\/people\/samil-beden">Şamil Beden<\/a>/);
+            assert.match(html, /IoT Project Manager, Ardic/);
+            assert.doesNotMatch(html, /private/);
+        }
+        // Regex characters are matched literally rather than failing the search.
+        await fetch(base + '/organization?term=' + encodeURIComponent('C++ (beta'));
+        assert.equal(listFilters.at(-1).slug.$regex, 'c-beta');
+        searchResult = [];
     });
     await t.test('pagination is bounded and malformed query values are rejected', async function () {
         listResult = Array.from({ length: 51 }, () => person);
