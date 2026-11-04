@@ -110,17 +110,26 @@ test('person organization links use durable IDs and current slugs, never stale s
 
 test('organization people queries exclude birthdays and match IDs in either BSON or string form', async function (t) {
     const sameNameOnly = { ...person, _id: new mongoose.Types.ObjectId(), positions: [{ title: 'Other', company: 'Current Co' }] };
+    const multiplePositions = {
+        ...person,
+        positions: [
+            { title: 'Earlier role', organization_id: orgId, order: 0, end_date: '2019' },
+            { title: 'Recent role', organization_id: orgId, order: 1, start_date: '2019-10', end_date: '2024-08' }
+        ]
+    };
     t.mock.method(Person, 'find', function (filter) {
         const ids = filter['positions.organization_id'].$in;
         assert.ok(ids[0] instanceof mongoose.Types.ObjectId);
         assert.equal(ids[1], orgId.toHexString());
-        return query([person, sameNameOnly], function (fields) { assert.equal(fields, '-birthday'); });
+        return query([person, multiplePositions, sameNameOnly], function (fields) { assert.equal(fields, '-birthday'); });
     });
     const result = await publicPeople.peopleForOrganization({ _id: orgId });
-    assert.equal(result.length, 1);
+    assert.equal(result.length, 2);
     assert.equal(result[0].href, '/people/jo-smith');
     assert.equal(result[0].positions.length, 1);
     assert.equal(result[0].positions[0].title, 'Engineer');
+    assert.equal(result[1].positions.length, 1);
+    assert.equal(result[1].positions[0].title, 'Recent role');
     assert.doesNotMatch(JSON.stringify(result), /birthday|private|Unresolved Co/);
 });
 
