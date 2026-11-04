@@ -842,6 +842,27 @@ window.onload = function() {
                 }
             });
         }
+
+        // /?location=<place>&level=city|country (the person page's location links) zooms the map to that place.
+        var params = new URLSearchParams(window.location.search);
+        var initialLocation = params.get('location');
+        if (initialLocation && initialLocation.length <= 200) {
+            var level = params.get('level') === 'city' ? 'city' : 'country';
+            google.maps.importLibrary('geocoding').then(function (geocoding) {
+                return new geocoding.Geocoder().geocode({ address: initialLocation });
+            }).then(function (response) {
+                var result = response.results[0];
+                if (!result) { return; }
+                if (level === 'city') {
+                    map.setCenter(result.geometry.location);
+                    map.setZoom(10);
+                } else {
+                    map.fitBounds(result.geometry.viewport);
+                }
+            }).catch(function (error) {
+                console.warn('Could not find ' + initialLocation + ' on the map', error);
+            });
+        }
     }
 
     initMap();    // create the Map object

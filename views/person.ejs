@@ -33,17 +33,25 @@
           <% if (position.company && position.organization_name && position.company !== position.organization_name) { %>
             <span>(formerly recorded as <%= position.company %>)</span>
           <% } %>
-          <% // Same rule as the admin People list: only a position marked current is current. %>
-          <span class="type-pill status-pill <%= position.current ? 'status-current' : 'status-alumni' %>"><%= position.current ? 'current' : 'alumni' %></span>
+          <% if (position.location) {
+            // "City, Region" links the city to the map at city level and the rest at country level.
+            var comma = position.location.indexOf(',');
+            var city = comma < 0 ? '' : position.location.slice(0, comma).trim();
+            var region = comma < 0 ? '' : position.location.slice(comma + 1).trim(); %>
+            <% if (city && region) { %>
+              <span><a href="/?location=<%= encodeURIComponent(position.location) %>&amp;level=city" title="Show <%= city %> on the map"><%= city %></a>, <a href="/?location=<%= encodeURIComponent(region) %>&amp;level=country" title="Show <%= region %> on the map"><%= region %></a></span>
+            <% } else { %><span><%= position.location %></span><% } %>
+          <% } %>
           <% if (position.start_date) { %><span>Start: <%= position.start_date %></span><% } %>
           <% if (position.end_date) { %><span>End: <%= position.end_date %></span><% } %>
           <% if (position.date) { %><span>As of: <%= position.date %></span><% } %>
-          <% if (position.location) { %><span><%= position.location %></span><% } %>
+          <% // Same rule as the admin People list: only a position marked current is current. %>
+          <span class="type-pill status-pill <%= position.current ? 'status-current' : 'status-alumni' %>"><%= position.current ? 'current' : 'alumni' %></span>
         </li>
       <% }); %>
     </ul>
   <% } %>
-  <%- include('_comments', { comments: locals.comments, heading: 'Comments', level: 'h2' }); -%>
+  <%- include('_comments', { comments: locals.comments, heading: 'Comments', level: 'h2', framed: true }); -%>
 </main>
 </body>
 </html>

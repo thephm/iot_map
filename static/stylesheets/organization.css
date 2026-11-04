@@ -84,6 +84,30 @@
 .person-positions-list li + li {
     margin-top: 8px;
 }
+/* The status pill sits at the right end of its position. */
+.person-positions-list li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 0.3em;
+}
+.person-positions-list li::before {
+    content: "\2022";
+    margin-left: -0.9em;
+    width: 0.6em;
+}
+.person-positions-list .status-pill {
+    margin: 0 0 0 auto;
+}
+
+/* Person page comments are each boxed like the Positions list. */
+.public-comments-framed li {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    font-size: 16px;
+}
 
 /* Standalone organization and person pages read better in a narrower column than Bootstrap's 1170px. */
 .container.standalone-page {

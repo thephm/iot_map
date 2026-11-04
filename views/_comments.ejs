@@ -1,5 +1,5 @@
 <% if (comments && comments.length) { %>
-  <section class="public-comments" aria-label="<%= heading %>">
+  <section class="public-comments<%= locals.framed ? ' public-comments-framed' : '' %>" aria-label="<%= heading %>">
     <<%= level %>><%= heading %></<%= level %>>
     <ul>
       <% comments.forEach(function (comment) { %>

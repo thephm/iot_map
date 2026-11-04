@@ -23,7 +23,7 @@ const person = {
         { title: 'Engineer', organization_id: orgId, organization_slug: 'stale-slug',
             company: 'Original Co', order: 1, current: true, start_date: '2020', location: 'Ottawa',
             birthday: 'private-position', extra: { birthday: 'private-nested' } },
-        { title: 'Legacy role', company: 'Unresolved Co', date: '5-Mar-2018', order: 0 },
+        { title: 'Legacy role', company: 'Unresolved Co', date: '5-Mar-2018', order: 0, location: 'Nashville, Tennessee' },
         { title: 'Missing org', organization_id: missingId, organization_slug: 'deleted-org',
             company: 'Deleted Co', end_date: '2019-04' },
         { title: 'Invalid reference', organization_id: 'not-an-id', organization_slug: 'unsafe-stale',
@@ -318,6 +318,8 @@ test('public people routes and every organization detail entry point are compati
         assert.match(html, /As of: 5-Mar-2018/);
         assert.match(html, /status-current">current</);
         assert.match(html, /status-alumni">alumni</);
+        assert.match(html, /<a href="\/\?location=Nashville%2C%20Tennessee&amp;level=city" title="Show Nashville on the map">Nashville<\/a>, <a href="\/\?location=Tennessee&amp;level=country" title="Show Tennessee on the map">Tennessee<\/a>/);
+        assert.match(html, /<span>Ottawa<\/span>/);
         assert.match(html, /Public note on person/);
         assert.doesNotMatch(html, /stale-slug|deleted-org|unsafe-stale|birthday|1978-03-05/);
         assert.doesNotMatch(JSON.stringify(capturedPerson), /birthday|private/);

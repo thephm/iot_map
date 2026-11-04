@@ -55,6 +55,7 @@ html[data-theme="dark"] .organization-details,
 html[data-theme="dark"] .product-box,
 html[data-theme="dark"] .organization-people-list,
 html[data-theme="dark"] .person-positions-list,
+html[data-theme="dark"] .public-comments-framed li,
 html[data-theme="dark"] .form-control,
 html[data-theme="dark"] .list-group-item,
 html[data-theme="dark"] .well {
