@@ -17,6 +17,16 @@
 
     document.addEventListener('DOMContentLoaded', updateSwitch);
     document.addEventListener('click', function (event) {
+        var navigationToggle = event.target.closest('.navbar-toggle');
+        if (navigationToggle) {
+            var navbar = navigationToggle.closest('.navbar');
+            var navigation = navbar && navbar.querySelector('.navbar-collapse');
+            if (!navigation) return;
+            var expanded = navigationToggle.getAttribute('aria-expanded') !== 'true';
+            navigationToggle.setAttribute('aria-expanded', String(expanded));
+            navigation.classList.toggle('in', expanded);
+            return;
+        }
         if (!event.target.closest('#theme-toggle')) return;
         var next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
         document.documentElement.dataset.theme = next;
