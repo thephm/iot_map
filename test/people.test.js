@@ -189,6 +189,14 @@ test('the People navbar link is hidden unless enabled (it is off in production)'
     assert.match(await ejs.renderFile(navbar, { showPeopleNav: true }), /href="\/people">People</);
 });
 
+test('standalone pages start with a single-row, collapsible mobile navbar', async function () {
+    const navbar = path.join(__dirname, '..', 'views', 'navbar.ejs');
+    const html = await ejs.renderFile(navbar, { standaloneNavigation: true });
+    assert.match(html, /aria-controls="navbar-collapse" aria-expanded="false" aria-label="Toggle navigation"/);
+    assert.match(html, /class="collapse navbar-collapse" id="navbar-collapse"/);
+    assert.doesNotMatch(html, /class="collapse navbar-collapse in"/);
+});
+
 test('product lists put commas directly after each item, with no space before them', async function () {
     const organization = new Organization({
         name: 'Acme', slug: 'acme',
