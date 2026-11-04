@@ -74,7 +74,9 @@ app.use(helmet({
             formAction: ["'self'"],
             upgradeInsecureRequests: null
         }
-    }
+    },
+    // Back links need the previous page on this site; other sites still get no referrer.
+    referrerPolicy: { policy: 'same-origin' }
 }));
 
 app.use(express.static(path.join(__dirname, "static")));

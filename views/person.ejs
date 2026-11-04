@@ -1,6 +1,6 @@
 <%- include('header'); -%>
 <%- include('navbar', { standaloneNavigation: true }); -%>
-<main class="container">
+<main class="container standalone-page">
   <% if (locals.mapOrganization) { %>
     <p><a href="/?organization=<%= encodeURIComponent(mapOrganization) %>">&larr; Map</a></p>
   <% } else { %>
@@ -10,15 +10,20 @@
   <% if (person.title) { %><p><%= person.title %></p><% } %>
   <% if (person.url) { %><p><a href="<%= person.url %>">Website</a></p><% } %>
   <% if (person.socials.length) { %>
-    <ul aria-label="Social profiles">
-      <% person.socials.forEach(function (social) { %>
-        <li><a href="<%= social.url %>"><%= social.name %></a></li>
+    <p class="social-links" aria-label="Social profiles">
+      <% person.socials.forEach(function (social) {
+        var iconPath = socialIcons[social.name.toLowerCase()]; %>
+        <a href="<%= social.url %>" aria-label="<%= social.name %>" title="<%= social.name %>">
+          <% if (iconPath) { %>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="<%= iconPath %>"></path></svg>
+          <% } else { %><%= social.name %><% } %>
+        </a>
       <% }); %>
-    </ul>
+    </p>
   <% } %>
   <% if (person.positions.length) { %>
     <h2>Positions</h2>
-    <ul>
+    <ul class="person-positions-list">
       <% person.positions.forEach(function (position) { %>
         <li>
           <% if (position.title) { %><strong><%= position.title %></strong><% } %>
@@ -28,7 +33,8 @@
           <% if (position.company && position.organization_name && position.company !== position.organization_name) { %>
             <span>(formerly recorded as <%= position.company %>)</span>
           <% } %>
-          <% if (position.current) { %><span>Current position</span><% } %>
+          <% // Same rule as the admin People list: only a position marked current is current. %>
+          <span class="type-pill status-pill <%= position.current ? 'status-current' : 'status-alumni' %>"><%= position.current ? 'current' : 'alumni' %></span>
           <% if (position.start_date) { %><span>Start: <%= position.start_date %></span><% } %>
           <% if (position.end_date) { %><span>End: <%= position.end_date %></span><% } %>
           <% if (position.date) { %><span>As of: <%= position.date %></span><% } %>

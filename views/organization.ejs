@@ -1,5 +1,6 @@
+<% // The name sits above its box, like the People and Products headings. %>
+<h1 class="organization-name"><%= organization.name %></h1>
 <div class="organization-details">
-<h1><%= organization.name %></h1>
 <% if (organization.iot_organization === false) { %><p class="non-iot-note">Not listed on the IoT map.</p><% } %>
 <%- include('organization-types'); -%>
 <% if (typeof(organization.location) != "undefined") { %>
@@ -34,17 +35,6 @@
 
 <% // Person links remember this organization so the person page can link back to it on the map.
 var fromOrganization = '?from=' + encodeURIComponent(organization.slug); %>
-<% var founderLinks = locals.founders || organization.history.founder.map(function (founder) {
-  return { name: [founder.first_name, founder.last_name].filter(Boolean).join(' ') || founder.name || 'Unnamed founder',
-    href: '', url: organization.checkUrl(founder.url) };
-}); %>
-<% if (founderLinks.length) { %><p>Founders:<% } %>
-<% founderLinks.forEach(function (founder, i) { %>
-  <% if (i) { %>, <% } %>
-  <% if (founder.href) { %><a href="<%= founder.href + fromOrganization %>"><%= founder.name %></a>
-  <% } else if (founder.url) { %><a href="<%= founder.url %>" target="<%= organization.slug %>"><%= founder.name %></a>
-  <% } else { %><%= founder.name %><% } %>
-<% }); %>
 <!--
 <% if (organization.post.length) { %><p>Posted:<% } %>
 <% for (i=0; i < organization.post.length; i++) {
@@ -68,6 +58,15 @@ var fromOrganization = '?from=' + encodeURIComponent(organization.slug); %>
   <p><%= organization.description %></p>
 <% } %>
 
+<% phone = organization.getPhone();
+if (phone) { %><p>Phone: <%= phone %></p><% } %>
+
+<% email = organization.getEmail();
+if (email) {%><p>email: <a href="mailto:<%= email %>"><%= email %></a></p><% } %>
+
+<% address = organization.getFirstLocation();
+if (address) { %><p>Address: <%= address %></p><% } %>
+
 <p class="social-links">
 <% for (i=0; i < organization.social_network.length; i++) {
   socialNetwork = organization.social_network[ i ];
@@ -82,21 +81,14 @@ var fromOrganization = '?from=' + encodeURIComponent(organization.slug); %>
 <% } %>
 </p>
 
-<% phone = organization.getPhone();
-if (phone) { %><p>Phone: <%= phone %></p><% } %>
-
-<% email = organization.getEmail();
-if (email) {%><p>email: <a href="mailto:<%= email %>"><%= email %></a></p><% } %>
-
-<% address = organization.getFirstLocation();
-if (address) { %><p>Address: <%= address %></p><% } %>
-
 <%- include('_comments', { comments: locals.comments, heading: 'Comments', level: 'h2' }); -%>
+</div>
 
-<% if (locals.people && people.length) { %>
-  <section aria-label="People at this organization">
+<% // People get their own box under the organization, like Products beside it.
+if (locals.people && people.length) { %>
+  <section class="organization-people" aria-label="People at this organization">
     <h2>People</h2>
-    <ul>
+    <ul class="organization-people-list">
       <% people.forEach(function (person) { %>
         <% person.positions.forEach(function (position) {
           var end = position.end_date || (position.current ? 'present' : '');
@@ -105,12 +97,13 @@ if (address) { %><p>Address: <%= address %></p><% } %>
             : position.end_date ? 'until ' + position.end_date
             : '';
           var details = [position.title, when, position.date && !position.end_date ? 'as of ' + position.date : ''].filter(Boolean); %>
-          <li><% if (person.href) { %><a href="<%= person.href + fromOrganization %>"><%= person.name %></a><% } else { %><%= person.name %><% } %><% details.forEach(function (detail) { %>, <%= detail %><% }); %><% if (person.slug) { %> <span class="person-slug"><%= person.slug %></span><% } %></li>
+          <li><% if (person.href) { %><a href="<%= person.href + fromOrganization %>"><%= person.name %></a><% } else { %><%= person.name %><% } %><% details.forEach(function (detail) { %>, <%= detail %><% }); %></li>
         <% }); %>
       <% }); %>
     </ul>
   </section>
 <% } %>
-</div>
 
+<% // The map moves products into its own Products section; the standalone page heads them here.
+if (locals.standalone && organization.product.length) { %><h2>Products</h2><% } %>
 <div class="org-products"><%- include('product'); -%></div>

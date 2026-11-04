@@ -276,7 +276,7 @@ test('public app starts without session credentials and serves read-only routes'
         const response = await fetch(base + '/organization/example');
         assert.equal(response.status, 200);
         const html = await response.text();
-        for (const host of ['founder.example.com', 'news.example.com', 'stock.example.com']) {
+        for (const host of ['news.example.com', 'stock.example.com']) {
             assert.ok(html.includes('href="http://' + host + '"'), host);
         }
         assert.match(html, /Example product/);

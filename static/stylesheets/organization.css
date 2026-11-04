@@ -1,0 +1,91 @@
+/* Organization, People and Product boxes, shared by the map and the standalone organization page. */
+.type-pill {
+    display: inline-block;
+    padding: 3px 12px;
+    margin-right: 6px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+}
+.type-hardware { background-color: #e2d5f5; }
+.type-software { background-color: #c8e6ff; }
+.type-service  { background-color: #d4f5d0; }
+/* Pills that wrap onto a second line keep a gap between rows. */
+.status-pill {
+    margin-left: 6px;
+    padding: 1px 10px;
+    font-size: 12px;
+    vertical-align: middle;
+}
+/* Current and alumni colours match the admin People list. */
+.status-current { background-color: #dcf5e3; color: #1d6b38; }
+.status-alumni  { background-color: #fbe1e1; color: #9b1c1c; }
+.organization-types {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 6px 0 10px;
+}
+.organization-types .type-pill {
+    margin: 0;
+}
+.social-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.social-links a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    min-height: 32px;
+    border-radius: 4px;
+}
+.social-links a:hover,
+.social-links a:focus-visible {
+    background-color: #eee;
+}
+
+.product-box,
+.organization-details,
+.organization-people-list,
+.person-positions-list {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 0 15px 5px;
+    margin-bottom: 15px;
+}
+.organization-details {
+    padding-top: 10px;
+}
+.organization-people-list,
+.person-positions-list {
+    padding: 10px 15px 10px 35px;
+}
+.product-box h3 .product-types {
+    margin-left: 10px;
+    vertical-align: middle;
+}
+.product-description {
+    font-size: 18px;
+}
+.product-description::first-letter {
+    text-transform: uppercase;
+}
+
+/* People and Positions lists read at body size with room between entries. */
+.organization-people-list,
+.person-positions-list {
+    font-size: 16px;
+}
+.organization-people-list li + li,
+.person-positions-list li + li {
+    margin-top: 8px;
+}
+
+/* Standalone organization and person pages read better in a narrower column than Bootstrap's 1170px. */
+.container.standalone-page {
+    max-width: 860px;
+}

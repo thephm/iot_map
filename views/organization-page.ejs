@@ -1,7 +1,9 @@
 <%- include('header'); -%>
 <%- include('navbar', { standaloneNavigation: true }); -%>
-<main class="container">
-  <%- include('organization'); -%>
+<main class="container standalone-page">
+  <p><a href="/" class="back-link">&larr; Back</a></p>
+  <%- include('organization', { standalone: true }); -%>
 </main>
+<script src="/js/back-link.js"></script>
 </body>
 </html>

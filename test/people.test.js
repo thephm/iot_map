@@ -124,60 +124,42 @@ test('organization people queries exclude birthdays and match IDs in either BSON
     assert.doesNotMatch(JSON.stringify(result), /birthday|private|Unresolved Co/);
 });
 
-test('founders are Founder people, plus embedded founders no such person matches', async function () {
-    const founder = (name, href, title) => ({ name, href, positions: [{ title }] });
-    const people = [
-        founder('Ada Lovelace', '/people/ada-lovelace', 'Co-Founder & CEO'),
-        founder('Grace Hopper', '/people/grace-hopper', 'Engineer'),
-        founder('Jo Lee', '/people/jo-lee', 'Founder'),
-        founder('jo  lee', '/people/jo-lee-2', 'Founder'),
-        founder('Unlinked', '', 'Founder')
-    ];
-    const founders = publicPeople.organizationFounders(new Organization({ history: { founder: [
-        { first_name: ' ada ', last_name: 'LOVELACE', url: 'ada.example.com' },
-        { name: 'Grace Hopper', url: 'javascript:alert(1)' },
-        { name: 'Jo Lee' },
-        { name: 'Unlinked', url: 'unlinked.example.com' },
-        {}
-    ] } }), people);
-    // Grace Hopper is an Engineer here, so her embedded record stays (its javascript: URL dropped);
-    // the blank embedded record is not shown.
-    assert.deepEqual(founders, [
-        { name: 'Ada Lovelace', href: '/people/ada-lovelace', url: '' },
-        { name: 'Jo Lee', href: '/people/jo-lee', url: '' },
-        { name: 'jo  lee', href: '/people/jo-lee-2', url: '' },
-        { name: 'Unlinked', href: '', url: '' },
-        { name: 'Grace Hopper', href: '', url: '' }
-    ]);
+test('organization details leave founders to the People section', async function () {
     const html = await ejs.renderFile(path.join(__dirname, '..', 'views', 'organization.ejs'), {
-        organization: new Organization({ name: 'Acme', slug: 'acme' }), people: [], founders: [
-            { name: '<b>Ada</b>', href: '/people/ada-lovelace', url: '' }, { name: 'Bob', href: '', url: 'http://bob.example' }
-        ], socialIcons: {}, showProductUrls: false
+        organization: new Organization({ name: 'Acme', slug: 'acme', history: { founder: [{ name: 'Ada Lovelace' }] } }),
+        people: [{ name: 'Ada Lovelace', href: '/people/ada-lovelace', positions: [{ title: 'Founder', current: true }] }],
+        socialIcons: {}, showProductUrls: false
     });
-    assert.match(html, /Founders:/);
-    assert.match(html, /<a href="\/people\/ada-lovelace\?from=acme">&lt;b&gt;Ada&lt;\/b&gt;<\/a>/);
-    assert.match(html, /<a href="http:\/\/bob.example" target="acme">Bob<\/a>/);
+    assert.doesNotMatch(html, /Founders:/);
+    assert.equal((html.match(/Ada Lovelace/g) || []).length, 1);
+    // People is its own section after the organization box, not inside it.
+    const details = html.slice(html.indexOf('<div class="organization-details">'), html.indexOf('<section class="organization-people"'));
+    assert.ok(details.includes('</div>') && !details.includes('Ada Lovelace'));
 });
 
 test('organization people are one line per position with name, title and dates', async function () {
-    const html = await ejs.renderFile(path.join(__dirname, '..', 'views', 'organization.ejs'), {
-        organization: new Organization({ name: 'Acme', slug: 'acme' }), founders: [], socialIcons: {}, showProductUrls: false,
+    const locals = {
+        organization: new Organization({ name: 'Acme', slug: 'acme' }), socialIcons: {}, showProductUrls: false,
         people: [
             { name: 'Mark Lapins', slug: 'mark-lapins', href: '/people/mark-lapins', positions: [{ title: 'Director', start_date: '2013-12', end_date: '2020-03', date: '2017-02-20' }] },
             { name: 'Aidan Montague', href: '', positions: [{ title: 'Chairman', date: '2017-02-20' }] },
             { name: 'Oliver Loisel', href: '', positions: [{ title: 'Managing Partner', start_date: '2010', end_date: '2021', date: '2017-02-20' }] },
             { name: 'Jo Lee', href: '', positions: [{ title: 'CEO', start_date: '2019', current: true }, { title: '<b>CTO</b>', current: true }] }
         ]
-    });
+    };
+    const view = path.join(__dirname, '..', 'views', 'organization.ejs');
+    const html = await ejs.renderFile(view, locals);
     const section = html.slice(html.indexOf('<h2>People</h2>'));
     const items = [...section.matchAll(/<li>(.*?)<\/li>/g)].map((match) => match[1]);
     assert.deepEqual(items, [
-        '<a href="/people/mark-lapins?from=acme">Mark Lapins</a>, Director, 2013-12 to 2020-03 <span class="person-slug">mark-lapins</span>',
+        '<a href="/people/mark-lapins?from=acme">Mark Lapins</a>, Director, 2013-12 to 2020-03',
         'Aidan Montague, Chairman, as of 2017-02-20',
         'Oliver Loisel, Managing Partner, 2010 to 2021',
         'Jo Lee, CEO, 2019 to present',
         'Jo Lee, &lt;b&gt;CTO&lt;/b&gt;'
     ]);
+    // Person slugs are not shown on the map or the standalone organization page.
+    assert.doesNotMatch(await ejs.renderFile(view, { ...locals, standalone: true }), /person-slug|>mark-lapins</);
 });
 
 test('only public comments are loaded, with text and date but never the author', async function (t) {
@@ -236,13 +218,13 @@ test('person rendering escapes old/new position text and keeps as-of dates separ
         positions: [{ title: '<img src=x>', company: '<b>Legacy</b>', date: '2018' }]
     });
     const html = await ejs.renderFile(path.join(__dirname, '..', 'views', 'person.ejs'), {
-        person: result, mongoEnvironment: { text: 'test', kind: 'local' }
+        person: result, mongoEnvironment: { text: 'test', kind: 'local' }, socialIcons: {}
     });
     assert.match(html, /&lt;script&gt;/);
     assert.match(html, /&lt;img src=x&gt;/);
     assert.match(html, /&lt;b&gt;Legacy&lt;\/b&gt;/);
     assert.match(html, /As of: 2018/);
-    assert.doesNotMatch(html, /Start: 2018|Current position|birthday|1978-03-05/);
+    assert.doesNotMatch(html, /Start: 2018|status-current|birthday|1978-03-05/);
 });
 
 test('public people routes and every organization detail entry point are compatible', async function (t) {
@@ -333,7 +315,8 @@ test('public people routes and every organization detail entry point are compati
         assert.match(html, /Unresolved Co/);
         assert.match(html, /Deleted Co/);
         assert.match(html, /As of: 5-Mar-2018/);
-        assert.match(html, /Current position/);
+        assert.match(html, /status-current">current</);
+        assert.match(html, /status-alumni">alumni</);
         assert.match(html, /Public note on person/);
         assert.doesNotMatch(html, /stale-slug|deleted-org|unsafe-stale|birthday|1978-03-05/);
         assert.doesNotMatch(JSON.stringify(capturedPerson), /birthday|private/);
@@ -343,18 +326,15 @@ test('public people routes and every organization detail entry point are compati
         assert.match(html, /<a href="\/\?organization=current-co%22%3C">&larr; Map<\/a>/);
         assert.doesNotMatch(html, /<a href="\/people">People<\/a>/);
     });
-    await t.test('nested organization results link back to people and retain old/new founders', async function () {
+    await t.test('nested organization results link back to people and leave out embedded founders', async function () {
         listResult = [person];
         for (const route of ['/organization/current-co', '/organization?term=current', '/standard/current-co']) {
             const response = await fetch(base + route);
             assert.equal(response.status, 200, route);
             const html = await response.text();
             assert.match(html, /href="\/people\/jo-smith\?from=current-co"/);
-            assert.match(html, /Legacy Founder/);
-            assert.match(html, /New Founder/);
-            assert.match(html, /&lt;script&gt;old&lt;\/script&gt;/);
             assert.match(html, /Public note on organization/);
-            assert.doesNotMatch(html, /javascript:|birthday|1978-03-05|Unresolved Co/);
+            assert.doesNotMatch(html, /Founders:|Legacy Founder|New Founder|script&gt;old|javascript:|birthday|1978-03-05|Unresolved Co/);
         }
         assert.ok(projections.length > 0);
         assert.ok(projections.every((fields) => fields === '-birthday'));

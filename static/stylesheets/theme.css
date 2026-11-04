@@ -53,6 +53,8 @@ html[data-theme="dark"] .navbar-default,
 html[data-theme="dark"] .panel,
 html[data-theme="dark"] .organization-details,
 html[data-theme="dark"] .product-box,
+html[data-theme="dark"] .organization-people-list,
+html[data-theme="dark"] .person-positions-list,
 html[data-theme="dark"] .form-control,
 html[data-theme="dark"] .list-group-item,
 html[data-theme="dark"] .well {
@@ -119,4 +121,12 @@ html[data-theme="dark"] .gm-style-iw-c {
 .public-comments time {
   font-size: 0.85em;
   opacity: 0.75;
+}
+html[data-theme="dark"] .status-current {
+    background-color: #1f3d2b;
+    color: #9fe0b4;
+}
+html[data-theme="dark"] .status-alumni {
+    background-color: #4a2427;
+    color: #f5b5b5;
 }
