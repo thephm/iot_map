@@ -634,6 +634,7 @@ window.onload = function() {
                 lastListHtml = html;
                 listView = null;
             } else if (showingList) {
+                saveListView();
                 lastListScroll = $panel.scrollTop();
                 lastListPageScroll = window.scrollY;
             }
@@ -644,6 +645,12 @@ window.onload = function() {
 
             if (!isList && lastListHtml !== null) {
                 $panel.prepend('<p><a href="#" id="back-to-results">&larr; Back</a></p>');
+            }
+
+            // a chosen organization zooms the map to its city
+            var $lat = $panel.find('input[id$="-lat"]').first();
+            if (!isList && $lat.length) {
+                zoomToOrganization($lat.attr('id').slice(0, -'-lat'.length));
             }
 
             var products = $('#organizations .org-products').detach();
