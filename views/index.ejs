@@ -848,8 +848,10 @@ window.onload = function() {
         var initialLocation = params.get('location');
         if (initialLocation && initialLocation.length <= 200) {
             var level = params.get('level') === 'city' ? 'city' : 'country';
-            google.maps.importLibrary('geocoding').then(function (geocoding) {
-                return new geocoding.Geocoder().geocode({ address: initialLocation });
+            $.when(mapLoaded).then(function () {
+                return google.maps.importLibrary('geocoding').then(function (geocoding) {
+                    return new geocoding.Geocoder().geocode({ address: initialLocation });
+                });
             }).then(function (response) {
                 var result = response.results[0];
                 if (!result) { return; }
