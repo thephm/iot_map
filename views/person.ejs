@@ -28,11 +28,13 @@
         <li>
           <% // The list item is a flex row, so the comma stays inside the title's item and the gap supplies the space. %>
           <% if (position.title) { %><span><strong><%= position.title %></strong><% if (position.organization_name || position.company) { %>,<% } %></span><% } %>
-          <% if (position.organization_href) { %>
-            <a href="<%= position.organization_href %>"><%= position.organization_name || position.company %></a>
-          <% } else { %><%= position.organization_name || position.company %><% } %>
-          <% if (position.company && position.organization_name && position.company !== position.organization_name) { %>
-            <span>(formerly recorded as <%= position.company %>)</span>
+          <% var organizationName = position.organization_name || position.company;
+            var formerly = position.company && position.organization_name && position.company !== position.organization_name;
+            // The comma follows whatever ends the organization part, when a location comes next.
+            var organizationComma = position.location ? ',' : ''; %>
+          <% if (organizationName) { %><span><% if (position.organization_href) { %><a href="<%= position.organization_href %>"><%= organizationName %></a><% } else { %><%= organizationName %><% } %><% if (!formerly) { %><%= organizationComma %><% } %></span><% } %>
+          <% if (formerly) { %>
+            <span>(formerly recorded as <%= position.company %>)<%= organizationComma %></span>
           <% } %>
           <% if (position.location) {
             // "City, Region" links the city to the map at city level and the rest at country level.
@@ -43,9 +45,11 @@
               <span><a href="/?location=<%= encodeURIComponent(position.location) %>&amp;level=city" title="Show <%= city %> on the map"><%= city %></a>, <a href="/?location=<%= encodeURIComponent(region) %>&amp;level=country" title="Show <%= region %> on the map"><%= region %></a></span>
             <% } else { %><span><%= position.location %></span><% } %>
           <% } %>
-          <% if (position.start_date) { %><span>Start: <%= position.start_date %></span><% } %>
-          <% if (position.end_date) { %><span>End: <%= position.end_date %></span><% } %>
-          <% if (position.date) { %><span>As of: <%= position.date %></span><% } %>
+          <% // Start/end dates win over the "as of" date, which is shown only when there are neither. %>
+          <% if (position.start_date && position.end_date) { %><span><%= position.start_date %> to <%= position.end_date %></span>
+          <% } else if (position.start_date) { %><span><%= position.start_date %></span>
+          <% } else if (position.end_date) { %><span>to <%= position.end_date %></span>
+          <% } else if (position.date) { %><span>as of <%= position.date %></span><% } %>
           <% // Same rule as the admin People list: only a position marked current is current. %>
           <span class="type-pill status-pill <%= position.current ? 'status-current' : 'status-alumni' %>"><%= position.current ? 'current' : 'alumni' %></span>
         </li>

@@ -240,8 +240,29 @@ test('person rendering escapes old/new position text and keeps as-of dates separ
     assert.match(html, /&lt;script&gt;/);
     assert.match(html, /&lt;img src=x&gt;/);
     assert.match(html, /&lt;b&gt;Legacy&lt;\/b&gt;/);
-    assert.match(html, /As of: 2018/);
+    assert.match(html, /as of 2018/);
     assert.doesNotMatch(html, /Start: 2018|status-current|birthday|1978-03-05/);
+});
+
+test('person position line: commas, "to" between dates, as-of only without dates', async function (t) {
+    t.mock.method(Organization, 'find', function () { return query([]); });
+    const result = await publicPeople.personWithOrganizations({
+        ...person,
+        positions: [
+            { title: 'CEO', company: 'Capricode', location: 'Oulu, Finland', start_date: '2015-08', end_date: '2022-11', date: '2017-02-20' },
+            { title: 'Board', company: 'Capricode', start_date: '2019-05', date: '2017-02-20' },
+            { title: 'COO', company: 'Capricode', date: '2017-02-20' }
+        ]
+    });
+    const html = await ejs.renderFile(path.join(__dirname, '..', 'views', 'person.ejs'), {
+        person: result, mongoEnvironment: { text: 'test', kind: 'local' }, socialIcons: {}
+    });
+    assert.match(html, /<strong>CEO<\/strong>,<\/span>\s*<span>Capricode,<\/span>/);
+    assert.match(html, /<span>2015-08 to 2022-11<\/span>/);
+    assert.match(html, /<span>Capricode<\/span>\s*<span>2019-05<\/span>/);
+    assert.match(html, /<span>as of 2017-02-20<\/span>/);
+    assert.equal(html.match(/as of/g).length, 1);
+    assert.doesNotMatch(html, /Start:|End:|As of/);
 });
 
 test('public people routes and every organization detail entry point are compatible', async function (t) {
@@ -332,7 +353,7 @@ test('public people routes and every organization detail entry point are compati
         assert.match(html, /href="\/organization\/current-co"/);
         assert.match(html, /Unresolved Co/);
         assert.match(html, /Deleted Co/);
-        assert.match(html, /As of: 5-Mar-2018/);
+        assert.match(html, /as of 5-Mar-2018/);
         assert.match(html, /status-current">current</);
         assert.match(html, /status-alumni">alumni</);
         assert.match(html, /<a href="\/\?location=Nashville%2C%20Tennessee&amp;level=city" title="Show Nashville on the map">Nashville<\/a>, <a href="\/\?location=Tennessee&amp;level=country" title="Show Tennessee on the map">Tennessee<\/a>/);
