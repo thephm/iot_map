@@ -192,14 +192,18 @@ function searchSlug(term) {
     return transliterate(term).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 }
 
-/** Search terms match names through their slugs, and product descriptions as typed. */
+/** Search terms match names through their slugs, and product descriptions and places as typed. */
 function organizationSearchFilter(term) {
     var slug = escapeRegExp(searchSlug(term) || term);
+    var typed = escapeRegExp(term.trim());
     return iotOnly({
         $or:
             [{ 'slug': mongoose.trusted({ $regex: slug, $options: 'i' }) },
             { 'product.slug': mongoose.trusted({ $regex: slug, $options: 'i' }) },
-            { 'product.description': mongoose.trusted({ $regex: escapeRegExp(term), $options: 'i' }) }
+            { 'product.description': mongoose.trusted({ $regex: escapeRegExp(term), $options: 'i' }) },
+            { 'location.address.city': mongoose.trusted({ $regex: typed, $options: 'i' }) },
+            { 'location.address.state_province': mongoose.trusted({ $regex: typed, $options: 'i' }) },
+            { 'location.address.country': mongoose.trusted({ $regex: typed, $options: 'i' }) }
             ]
     });
 }
