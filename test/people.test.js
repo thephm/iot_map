@@ -174,7 +174,7 @@ test('only public comments are loaded, with text and date but never the author',
         ], function (fields) { assert.equal(fields, 'text created_at entity.product_id'); });
     });
     const comments = await publicComments.forEntity('person', personId);
-    assert.deepEqual(comments, [{ text: 'Shown <b>escaped</b>', date: '2026-10-27' }]);
+    assert.deepEqual(comments, [{ text: 'Shown <b>escaped</b>', date: '2026-10-27 at 10:00', datetime: '2026-10-27T10:00:00.000Z' }]);
     assert.deepEqual(filters[0], { 'entity.type': 'person', 'entity.id': personId, public: true });
     const byProduct = await publicComments.forProducts(orgId);
     assert.deepEqual(filters[1], { 'entity.type': 'product', 'entity.id': orgId, public: true });

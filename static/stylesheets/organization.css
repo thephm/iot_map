@@ -84,7 +84,7 @@
 .person-positions-list li + li {
     margin-top: 8px;
 }
-/* The status pill sits at the right end of its position. */
+/* The status pill sits just after its position. */
 .person-positions-list li {
     display: flex;
     flex-wrap: wrap;
@@ -97,7 +97,7 @@
     width: 0.6em;
 }
 .person-positions-list .status-pill {
-    margin: 0 0 0 auto;
+    margin: 0 0 0 0.4em;
 }
 
 /* Person page comments are each boxed like the Positions list. */

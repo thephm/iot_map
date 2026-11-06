@@ -26,7 +26,8 @@
     <ul class="person-positions-list">
       <% person.positions.forEach(function (position) { %>
         <li>
-          <% if (position.title) { %><strong><%= position.title %></strong><% } %>
+          <% // The list item is a flex row, so the comma stays inside the title's item and the gap supplies the space. %>
+          <% if (position.title) { %><span><strong><%= position.title %></strong><% if (position.organization_name || position.company) { %>,<% } %></span><% } %>
           <% if (position.organization_href) { %>
             <a href="<%= position.organization_href %>"><%= position.organization_name || position.company %></a>
           <% } else { %><%= position.organization_name || position.company %><% } %>
