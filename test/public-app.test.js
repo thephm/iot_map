@@ -132,7 +132,7 @@ test('public app starts without session credentials and serves read-only routes'
         }
     });
 
-    await t.test('homepage retains totals, CSP, and CDN integrity attributes without auth locals', async function () {
+    await t.test('homepage retains totals and CSP while location zoom waits for map data', async function () {
         const response = await fetch(base);
         assert.equal(response.status, 200);
         assert.equal(response.headers.get('set-cookie'), null);
@@ -146,6 +146,7 @@ test('public app starts without session credentials and serves read-only routes'
         assert.match(html, /id="mobile-map-controls"/);
         assert.match(html, /id="nav-search" form="nav-search-form"/);
         assert.match(html, /src="\/js\/mobile-layout.js"/);
+        assert.match(html, /\$\.when\(mapLoaded\)\.then\(function \(\) \{\s*return google\.maps\.importLibrary\('geocoding'\)/);
         assert.doesNotMatch(html, /action="\/(?:login|logout|edit)"/);
         const scripts = html.match(/<script src="https:\/\/ajax\.googleapis\.com[^>]+>/g);
         assert.equal(scripts.length, 2);
