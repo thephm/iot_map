@@ -5,6 +5,19 @@ var organizationsSection = document.getElementById('organizations');
 var searchInput = document.getElementById('nav-search');
 var searchForm = document.getElementById('nav-search-form');
 var mobileSearchSlot = document.getElementById('mobile-search-slot');
+var sectionButtons = document.querySelectorAll('.mobile-section-toggle');
+
+function setCategorySectionsCollapsed(collapsed) {
+    var controls = 'primary_category secondary_category';
+    sectionButtons.forEach(function(button) {
+        if (button.getAttribute('aria-controls') === controls) {
+            button.setAttribute('aria-expanded', String(!collapsed));
+        }
+    });
+    controls.split(' ').forEach(function(id) {
+        document.getElementById(id).classList.toggle('mobile-section-collapsed', collapsed);
+    });
+}
 
 function positionProducts() {
     if (mobileLayout.matches) {
@@ -27,12 +40,12 @@ function positionSearch() {
 function positionMobileLayout() {
     positionProducts();
     positionSearch();
+    setCategorySectionsCollapsed(mobileLayout.matches);
 }
 
 positionMobileLayout();
 mobileLayout.addEventListener('change', positionMobileLayout);
 
-var sectionButtons = document.querySelectorAll('.mobile-section-toggle');
 sectionButtons.forEach(function(button) {
     button.addEventListener('click', function() {
         var expanded = button.getAttribute('aria-expanded') !== 'true';
