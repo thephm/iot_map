@@ -40,7 +40,7 @@ test('public app starts without session credentials and serves read-only routes'
         },
         post: [{ service: 'News', url: 'news.example.com' }],
         stock: { ticker_symbol: 'EX', url: 'stock.example.com' },
-        location: [{ address: { lat: 45, lng: -75 } }],
+        location: [{ address: { city: 'Ottawa', state_province: 'Ontario', country: 'Canada', lat: 45, lng: -75 } }],
         product: [{ name: 'Example product', slug: 'example-product', hardware: true }]
     });
     const connect = t.mock.method(mongoose, 'connect', async function (uri, options) {
@@ -146,7 +146,9 @@ test('public app starts without session credentials and serves read-only routes'
         assert.match(html, /id="mobile-map-controls"/);
         assert.match(html, /id="nav-search" form="nav-search-form"/);
         assert.match(html, /src="\/js\/mobile-layout.js"/);
-        assert.match(html, /\$\.when\(mapLoaded\)\.then\(function \(\) \{\s*return google\.maps\.importLibrary\('geocoding'\)/);
+        assert.match(html, /\$\.when\(mapLoaded\)\.then\(function \(\) \{\s*return zoomToPlace\(initialLocation, level\)/);
+        assert.match(html, /function zoomToPlace\(place, level\) \{\s*return google\.maps\.importLibrary\('geocoding'\)/);
+        assert.match(html, /if \(data\.place\) \{\s*zoomToPlace\(data\.place\.name, data\.place\.level\)/);
         assert.doesNotMatch(html, /action="\/(?:login|logout|edit)"/);
         const scripts = html.match(/<script src="https:\/\/ajax\.googleapis\.com[^>]+>/g);
         assert.equal(scripts.length, 2);
@@ -332,5 +334,13 @@ test('public app starts without session credentials and serves read-only routes'
         for (const filter of organizationFilters) {
             assert.equal(filter.iot_organization.$ne, false);
         }
+    });
+
+    await t.test('map search names the city or country a term matches exactly, for zooming', async function () {
+        const place = async (term) => (await (await fetch(base + '/map/organization?term=' + encodeURIComponent(term))).json()).place;
+        assert.deepEqual(await place(' canada '), { name: 'Canada', level: 'country' });
+        assert.deepEqual(await place('OTTAWA'), { name: 'Ottawa, Ontario, Canada', level: 'city' });
+        assert.equal(await place('Ott'), undefined);
+        assert.equal(await place('example'), undefined);
     });
 });

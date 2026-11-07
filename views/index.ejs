@@ -372,7 +372,11 @@ window.onload = function() {
                     features = map.data.addGeoJson(data) || [];
                     resetZoom();
                     logFeatures(features);
-                    zoomToOrganization(term);
+                    if (data.place) {
+                        zoomToPlace(data.place.name, data.place.level);
+                    } else {
+                        zoomToOrganization(term);
+                    }
                 }
             });
         }
@@ -576,6 +580,24 @@ window.onload = function() {
                 map.setCenter(position);
                 map.setZoom(10);
             }
+        }
+
+        // zoom the map to a city, or fit a country
+        function zoomToPlace(place, level) {
+            return google.maps.importLibrary('geocoding').then(function (geocoding) {
+                return new geocoding.Geocoder().geocode({ address: place });
+            }).then(function (response) {
+                var result = response.results[0];
+                if (!result) { return; }
+                if (level === 'city') {
+                    map.setCenter(result.geometry.location);
+                    map.setZoom(10);
+                } else {
+                    map.fitBounds(result.geometry.viewport);
+                }
+            }).catch(function (error) {
+                console.warn('Could not find ' + place + ' on the map', error);
+            });
         }
         /**
          *
@@ -849,20 +871,7 @@ window.onload = function() {
         if (initialLocation && initialLocation.length <= 200) {
             var level = params.get('level') === 'city' ? 'city' : 'country';
             $.when(mapLoaded).then(function () {
-                return google.maps.importLibrary('geocoding').then(function (geocoding) {
-                    return new geocoding.Geocoder().geocode({ address: initialLocation });
-                });
-            }).then(function (response) {
-                var result = response.results[0];
-                if (!result) { return; }
-                if (level === 'city') {
-                    map.setCenter(result.geometry.location);
-                    map.setZoom(10);
-                } else {
-                    map.fitBounds(result.geometry.viewport);
-                }
-            }).catch(function (error) {
-                console.warn('Could not find ' + initialLocation + ' on the map', error);
+                return zoomToPlace(initialLocation, level);
             });
         }
     }

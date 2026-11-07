@@ -93,11 +93,14 @@ function getSlug(value) {
  * Generate geoJSON for a set of organizations
  *
  * @param array organizations JSON representation of organizations
- * 
+ *
+ * @param object place optional city or country the search named, for the map to zoom to
+ *
  */
-function getGeoJSON(organizations) {
+function getGeoJSON(organizations, place) {
     return JSON.stringify({
         type: "FeatureCollection",
+        ...(place ? { place: place } : {}),
         features: organizations.reduce(function (features, organization) {
             var location = organization.location && organization.location[0];
             var address = location && location.address;
@@ -235,11 +238,29 @@ router.get('/organization', async function (req, res, next) {
     } catch (error) { next(error); }
 });
 
+/** The city or country a search term names exactly, e.g. "helsinki" gives Helsinki, Finland. */
+function searchPlace(term, organizations) {
+    var name = term.trim().toLowerCase();
+    if (!name) { return null; }
+    var addresses = organizations.flatMap(function (organization) {
+        return (organization.location || []).map(function (location) { return (location && location.address) || {}; });
+    });
+    var same = function (value) { return String(value || '').trim().toLowerCase() === name; };
+    var country = addresses.find(function (address) { return same(address.country); });
+    if (country) { return { name: String(country.country).trim(), level: 'country' }; }
+    var city = addresses.find(function (address) { return same(address.city); });
+    if (city) {
+        return { name: [city.city, city.state_province, city.country].map(function (part) { return String(part || '').trim(); }).filter(Boolean).join(', '), level: 'city' };
+    }
+    return null;
+}
+
 router.get("/map/organization", function (req, res, next) {
-    Organization.find(organizationSearchFilter(String(req.query.term || "")))
+    var term = String(req.query.term || "");
+    Organization.find(organizationSearchFilter(term))
         .exec()
         .then(function (organizations) {
-            res.type("json").send(getGeoJSON(organizations));
+            res.type("json").send(getGeoJSON(organizations, searchPlace(term, organizations)));
         })
         .catch(next);
 });
